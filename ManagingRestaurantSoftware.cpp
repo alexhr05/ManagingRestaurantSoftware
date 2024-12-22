@@ -85,7 +85,32 @@ void readFromOrderFile() {
 	in.close();
 }
 
+void writeInWarehouseFile(char* text) {
+	ofstream file(ORDER_FILE, ios::app);
 
+	file << text;
+
+	file.close();
+
+}
+
+void writeInMenuFile(char* text) {
+	ofstream file(MENU_FILE, ios::app);
+
+	file << text;
+
+	file.close();
+
+}
+
+void writeInOrderFile(char* text) {
+	ofstream file(ORDER_FILE, ios::app);
+
+	file << text;
+
+	file.close();
+
+}
 
 int main()
 {
