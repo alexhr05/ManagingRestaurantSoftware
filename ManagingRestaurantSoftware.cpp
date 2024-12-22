@@ -19,7 +19,11 @@ using namespace std;
 
 const char UPPER_FOLDER[] = "./warehouse.txt";
 
-const char FILE_NAME[] = "PractFiles.cpp";
+const char FILE_NAME[] = "warehouse.txt";
+
+const char MANAGER_MENU_OPTIONS[] = "warehouse.txt";
+
+const char WORKER_MENU_OPTIONS[] = "1.Overview of the menu\n2.View order\n3.Order cancellation\n";
 
 const int BUFFER_SIZE = 1024;
 
@@ -42,24 +46,31 @@ void printSourceCode() {
 	in.close();
 }
 
-void readCharArrayWithSpaces() {
-	ofstream out(FILE_NAME);
-	
-	char test[] = "abc de";
-	out << test;
+//void readCharArrayWithSpaces() {
+//	ofstream out(FILE_NAME);
+//	
+//	char test[] = "abc de";
+//	out << test;
+//
+//	out.close();
+//
+//	ifstream in(FILE_NAME);
+//
+//	char test2[BUFFER_SIZE];
+//	in.getline(test2, BUFFER_SIZE);
+//
+//	in.close();
+//}
 
-	out.close();
 
-	ifstream in(FILE_NAME);
+void writeInFile(char* text) {
+	ofstream file("warehouse.txt", ios::app);
 
-	char test2[BUFFER_SIZE];
-	in.getline(test2, BUFFER_SIZE);
+	file << text;
 
-	in.close();
+	file.close();
+	printSourceCode();
 }
-
-
-
 
 enum workersType {
     waiter,
@@ -71,7 +82,8 @@ int main()
     char order[MAX_SIZE_CHAR_ARRAY];
 	char typeOfWokrer;
 
-    
+	cout << MANAGER_MENU_OPTIONS<<endl;
+
 	do {
 		cout << "Enter your type of hierarchy:";
 		cin >> typeOfWokrer;
@@ -82,16 +94,13 @@ int main()
 	
 
 	if (typeOfWokrer == 'w') {
-
+		printSourceCode();
 	}
 	else if(typeOfWokrer == 'm'){
 		cout << "Enter product:";
 		cin.getline(product, MAX_SIZE_CHAR_ARRAY);
-
-		ofstream file("warehouse.txt");
-
+		writeInFile(product);
 		
-		file << product;
-		file.close();
+		
 	}
 }
