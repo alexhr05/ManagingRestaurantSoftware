@@ -17,8 +17,6 @@
 
 using namespace std;
 
-const char UPPER_FOLDER[] = "./warehouse.txt";
-
 const char WAREHOUSE_FILE[] = "warehouse.txt";
 
 const char MENU_FILE[] = "menu.txt";
@@ -33,7 +31,13 @@ const int BUFFER_SIZE = 1024;
 
 const int MAX_SIZE_CHAR_ARRAY = 1024;
 
-void readFromFile() {
+enum workersType {
+	waiter,
+	manager
+};
+
+
+void readFromWarehouseFile() {
 	ifstream in(WAREHOUSE_FILE);
 
 	if (!in.is_open()) {
@@ -49,36 +53,39 @@ void readFromFile() {
 	in.close();
 }
 
-//void readCharArrayWithSpaces() {
-//	ofstream out(FILE_NAME);
-//	
-//	char test[] = "abc de";
-//	out << test;
-//
-//	out.close();
-//
-//	ifstream in(FILE_NAME);
-//
-//	char test2[BUFFER_SIZE];
-//	in.getline(test2, BUFFER_SIZE);
-//
-//	in.close();
-//}
+void readFromMenuFile() {
+	ifstream in(MENU_FILE);
 
+	if (!in.is_open()) {
+		cout << "Error";
+		return;
+	}
 
-void writeInFile(char* text) {
-	ofstream file(WAREHOUSE_FILE, ios::app);
+	char line[MAX_SIZE_CHAR_ARRAY];
+	while (in.getline(line, BUFFER_SIZE)) {
+		cout << line << endl;
+	}
 
-	file << text;
-
-	file.close();
-	readFromFile();
+	in.close();
 }
 
-enum workersType {
-    waiter,
-    manager
-};
+void readFromOrderFile() {
+	ifstream in(ORDER_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+		return;
+	}
+
+	char line[MAX_SIZE_CHAR_ARRAY];
+	while (in.getline(line, BUFFER_SIZE)) {
+		cout << line << endl;
+	}
+
+	in.close();
+}
+
+
 
 int main()
 {
@@ -96,10 +103,17 @@ int main()
 	}
 
 	char product[MAX_SIZE_CHAR_ARRAY];
-	
+	int action;
+
 	if (typeOfWokrer == 'w') {
 		cout << WAITER_MENU_OPTIONS << endl;
-		readFromFile();
+		cout << endl;
+
+		//cout << "What you want to choose from above:";
+		//cin >> action;
+
+
+
 	}
 	else if(typeOfWokrer == 'm'){
 		cout << MANAGER_MENU_OPTIONS << endl;
