@@ -134,10 +134,27 @@ int main()
 		cout << WAITER_MENU_OPTIONS << endl;
 		cout << endl;
 
-		//cout << "What you want to choose from above:";
-		//cin >> action;
+		do {
+			cout << "What you want to choose from above:";
+			cin >> action;
 
+			if (action == 1) {
+				cout << endl;
+				readFromMenuFile();
+			}
+			else if (action == 2) {
 
+			}
+			else if (action == 3) {
+
+			}
+			else if (action == 4) {
+
+			}
+			else if (action == 5) {
+
+			}
+		} while (action >= 1 || action <= 5);
 
 	}
 	else if(typeOfWokrer == 'm'){
@@ -146,7 +163,7 @@ int main()
 		cin.getline(product, MAX_SIZE_CHAR_ARRAY);
 
 		cout << endl;
-		writeInFile(product);
+		
 		
 		
 	}
