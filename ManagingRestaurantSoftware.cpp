@@ -3,11 +3,11 @@
 * Introduction to programming course
 * Faculty of Mathematics and Informatics of Sofia University
 * Winter semester 2024/2025
-* 
+*
 * @author Alex Hristov
 * @idnumber 6MI0600471
 * @compiler VC
-* 
+*
 */
 
 
@@ -22,6 +22,8 @@ const char WAREHOUSE_FILE[] = "warehouse.txt";
 const char MENU_FILE[] = "menu.txt";
 
 const char ORDER_FILE[] = "order.txt";
+
+const char TURNOIVER_PER_DAY_FILE[] = "turnoverPerDay.txt";
 
 const char WAITER_MENU_OPTIONS[] = "1. Overview of the menu\n2. View order\n3. Order cancellation\n4. View past orders\n5. View past orders in alphabetical order as well as the number of orders of each item\n6. View the profits for the day";
 
@@ -44,10 +46,10 @@ void readFromWarehouseFile() {
 		cout << "Error";
 		return;
 	}
-	
+
 	char line[MAX_SIZE_CHAR_ARRAY];
-	while (in.getline(line, BUFFER_SIZE)) {		
-		cout << line<<endl;
+	while (in.getline(line, BUFFER_SIZE)) {
+		cout << line << endl;
 	}
 
 	in.close();
@@ -69,8 +71,21 @@ void readFromMenuFile() {
 	in.close();
 }
 
+int textLength(char* text) {
+	int counter = 0;
+
+	while (*text != '\0') {
+		counter++;
+		text++;
+	}
+	return counter;
+}
+
+
+
 void readFromOrderFile() {
 	ifstream in(ORDER_FILE);
+	char ordersFromFile[MAX_SIZE_CHAR_ARRAY];
 
 	if (!in.is_open()) {
 		cout << "Error";
@@ -78,7 +93,13 @@ void readFromOrderFile() {
 	}
 
 	char line[MAX_SIZE_CHAR_ARRAY];
+	int counterChar = 0;
 	while (in.getline(line, BUFFER_SIZE)) {
+		/*while (*line != '\0') {
+			counterChar++;
+			line++;
+		}*/
+
 		cout << line << endl;
 	}
 
@@ -111,11 +132,42 @@ void writeInOrderFile(char* text) {
 	file.close();
 
 }
+bool isExistArticle(int articleId) {
+	ifstream file(MENU_FILE);
+	char line[BUFFER_SIZE];
+
+	if (!file.is_open()) {
+		cout << "Error";
+
+	}
+	
+	while (file.getline(line, BUFFER_SIZE)) {
+		cout << "digitChar=" << articleId << endl;
+		
+		cout << "line[0]=" << line[0] << endl;
+		int digit = line[0] - '0';
+			if (articleId == digit) {
+				return true;
+			}
+
+	}
+
+
+	file.close();
+	return false;
+}
+
+
 
 int main()
 {
-    char order[MAX_SIZE_CHAR_ARRAY];
+	int orders[MAX_SIZE_CHAR_ARRAY];
 	char typeOfWokrer;
+
+	char product[MAX_SIZE_CHAR_ARRAY];
+	int action;
+	char ordersFromFile[MAX_SIZE_CHAR_ARRAY];
+
 
 	cout << "Enter your type of hierarchy:";
 	cin >> typeOfWokrer;
@@ -127,8 +179,6 @@ int main()
 		cin.ignore();
 	}
 
-	char product[MAX_SIZE_CHAR_ARRAY];
-	int action;
 
 	if (typeOfWokrer == 'w') {
 		cout << WAITER_MENU_OPTIONS << endl;
@@ -143,6 +193,29 @@ int main()
 				readFromMenuFile();
 			}
 			else if (action == 2) {
+				int articleId;
+			
+
+				int i = 0;
+				do {
+					cout << "Now you can make order from the menu:";
+					cin >> articleId;
+					if (isExistArticle(articleId)) {
+						cout << "Article is CONTAINED" << endl;
+						orders[i] = articleId;
+						i++;
+					}
+					else {
+						cout << "Article is NOT CONTAINED" << endl;
+					}
+					
+
+				} while (articleId != 0);
+				cout << endl;
+				for (int j = 0; j < i; j++) {
+					cout << orders[j] << endl;
+				}
+
 
 			}
 			else if (action == 3) {
@@ -157,14 +230,14 @@ int main()
 		} while (action >= 1 || action <= 5);
 
 	}
-	else if(typeOfWokrer == 'm'){
+	else if (typeOfWokrer == 'm') {
 		cout << MANAGER_MENU_OPTIONS << endl;
 		cout << "Enter product:";
 		cin.getline(product, MAX_SIZE_CHAR_ARRAY);
 
 		cout << endl;
-		
-		
-		
+
+
+
 	}
 }
