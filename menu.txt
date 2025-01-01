@@ -1,3 +1,4 @@
-1.Salad Shopska - 3.30lv.
-2.Salad Ceaser- 5.30lv.
-3.Soup Topcheta - 2.50lv.
+1;Salad Shopska;3.30
+2;Salad Ceaser;5.30
+3;Soup Topcheta;2.50
+13;Schnitzel;12.50

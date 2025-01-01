@@ -25,6 +25,8 @@ const char ORDER_FILE[] = "order.txt";
 
 const char TURNOIVER_PER_DAY_FILE[] = "turnoverPerDay.txt";
 
+const char _FILE[] = "order.txt";
+
 const char WAITER_MENU_OPTIONS[] = "1. Overview of the menu\n2. View order\n3. Order cancellation\n4. View past orders\n5. View past orders in alphabetical order as well as the number of orders of each item\n6. View the profits for the day";
 
 const char MANAGER_MENU_OPTIONS[] = "1. Overview of the menu\n2. View order\n3. Order cancellation\n4. View past orders in alphabetical order as well as the number of orders of each item\n5. View past orders\n6. Overview of what is left and of what\n7. Remove a product from warehouse\n8. Add a new product to the warehouse\n9. View the profits for the day\n10. Taking a report for the day\n11. Subtract all turnovers from a given date to now\n12. Adding a new product to the menu\n13. Remove a product from the menu";
@@ -38,6 +40,15 @@ enum workersType {
 	manager
 };
 
+int textLength(char* text) {
+	int counter = 0;
+
+	while (*text != '\0') {
+		counter++;
+		text++;
+	}
+	return counter;
+}
 
 void readFromWarehouseFile() {
 	ifstream in(WAREHOUSE_FILE);
@@ -55,6 +66,32 @@ void readFromWarehouseFile() {
 	in.close();
 }
 
+bool searchSubString(char* main, char* sub) {
+	if (main == nullptr || sub == nullptr) {
+		return false;
+	}
+	int mainLength = textLength(main);
+	int subLength = textLength(sub);
+
+	if (subLength > mainLength) {
+		return false;
+	}
+
+
+	for (int i = 0; i < mainLength - subLength; i++) {
+		int j = 0;
+		while (j < subLength && main[i + j] == sub[j]) {
+			j++;
+		}
+		if (j == subLength) {
+			return true;
+		}
+	}
+	return false;
+
+}
+
+
 void readFromMenuFile() {
 	ifstream in(MENU_FILE);
 
@@ -64,22 +101,20 @@ void readFromMenuFile() {
 	}
 
 	char line[MAX_SIZE_CHAR_ARRAY];
+	cout << endl;
+	
 	while (in.getline(line, BUFFER_SIZE)) {
+		cout << endl;
 		cout << line << endl;
+		char sub[] = ";Soup";
+		cout<<"isContain:"<<searchSubString(line, sub)<<endl;
 	}
+	cout << endl;
 
+	
 	in.close();
 }
 
-int textLength(char* text) {
-	int counter = 0;
-
-	while (*text != '\0') {
-		counter++;
-		text++;
-	}
-	return counter;
-}
 
 
 
@@ -140,16 +175,29 @@ bool isExistArticle(int articleId) {
 		cout << "Error";
 
 	}
-	
+	int i = 0;
+	int digit = 0;
 	while (file.getline(line, BUFFER_SIZE)) {
+		i = 0;
 		cout << "digitChar=" << articleId << endl;
 		
 		cout << "line[0]=" << line[0] << endl;
-		int digit = line[0] - '0';
-			if (articleId == digit) {
-				return true;
-			}
-
+		cout << "Novo vlizane;";
+		while (line[i] >= '0' && line[i] <= '9') {
+			 digit = digit*10 + line[i] - '0';
+			 cout << endl;
+			 cout << "line["<<i<<"]=" << line[i]<<endl;
+			 cout << "digit=" << digit<<endl;
+			 i++;
+		}
+		
+		
+		
+		
+		if (articleId == digit) {
+			return true;
+		}
+		digit = 0;
 	}
 
 
@@ -158,68 +206,92 @@ bool isExistArticle(int articleId) {
 }
 
 
+void entryTitles() {
+	cout << endl;
+	
+	cout << "    WELCOME TO"<<endl;
+	cout << "    RESTAURANT SOFTWARE " << endl;
+	cout << endl;
+
+}
 
 int main()
 {
 	int orders[MAX_SIZE_CHAR_ARRAY];
-	char typeOfWokrer;
+	char typeOfWorker;// = getTypeOfWorker();
 
 	char product[MAX_SIZE_CHAR_ARRAY];
 	int action;
 	char ordersFromFile[MAX_SIZE_CHAR_ARRAY];
 
-
+	entryTitles();
 	cout << "Enter your type of hierarchy:";
-	cin >> typeOfWokrer;
+	cin >> typeOfWorker;
 
-	while (typeOfWokrer != 'w' && typeOfWokrer != 'm') {
+	while (typeOfWorker != 'w' && typeOfWorker != 'm') {
 		cout << "You have to enter your type of hierarchy(Waiter - w; Manager - m):";
-		cin >> typeOfWokrer;
+		cin >> typeOfWorker;
 
 		cin.ignore();
 	}
 
 
-	if (typeOfWokrer == 'w') {
+	if (typeOfWorker == 'w') {
+		cout << endl;
 		cout << WAITER_MENU_OPTIONS << endl;
 		cout << endl;
 
 		do {
+			
 			cout << "What you want to choose from above:";
 			cin >> action;
 
 			if (action == 1) {
-				cout << endl;
 				readFromMenuFile();
 			}
 			else if (action == 2) {
 				int articleId;
 			
 
-				int i = 0;
+				int countArticleInOrders = 0;
+				bool isExistArticleInMenu;
 				do {
-					cout << "Now you can make order from the menu:";
+					cout << endl;
+					
+					cout << "Now you can make order from the menu (if you want to finish order, enter 0(zero):"<<endl;
+					
 					cin >> articleId;
-					if (isExistArticle(articleId)) {
+					if (articleId == 0) {
+						break;
+					}
+
+					isExistArticleInMenu = isExistArticle(articleId);
+					if (isExistArticleInMenu) {
 						cout << "Article is CONTAINED" << endl;
-						orders[i] = articleId;
-						i++;
+						orders[countArticleInOrders] = articleId;
+						countArticleInOrders++;
 					}
 					else {
 						cout << "Article is NOT CONTAINED" << endl;
 					}
 					
 
-				} while (articleId != 0);
+				} while (isExistArticleInMenu != false);
+
+				if (isExistArticleInMenu == false) {
+					countArticleInOrders = 0;
+				}
+
+				cout << "countArticleInOrders="<< countArticleInOrders;
 				cout << endl;
-				for (int j = 0; j < i; j++) {
+				for (int j = 0; j < countArticleInOrders; j++) {
 					cout << orders[j] << endl;
 				}
 
 
 			}
 			else if (action == 3) {
-
+				
 			}
 			else if (action == 4) {
 
@@ -230,7 +302,7 @@ int main()
 		} while (action >= 1 || action <= 5);
 
 	}
-	else if (typeOfWokrer == 'm') {
+	else if (typeOfWorker == 'm') {
 		cout << MANAGER_MENU_OPTIONS << endl;
 		cout << "Enter product:";
 		cin.getline(product, MAX_SIZE_CHAR_ARRAY);
