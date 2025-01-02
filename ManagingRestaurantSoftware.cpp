@@ -106,7 +106,7 @@ void readFromMenuFile() {
 	while (in.getline(line, BUFFER_SIZE)) {
 		cout << endl;
 		cout << line << endl;
-		char sub[] = ";Soup";
+		char sub[] = "Soup";
 		cout<<"isContain:"<<searchSubString(line, sub)<<endl;
 	}
 	cout << endl;
@@ -223,6 +223,8 @@ int main()
 	char product[MAX_SIZE_CHAR_ARRAY];
 	int action;
 	char ordersFromFile[MAX_SIZE_CHAR_ARRAY];
+	char completеОrder[MAX_SIZE_CHAR_ARRAY];
+	char date[] = "01/01/2025";
 
 	entryTitles();
 	cout << "Enter your type of hierarchy:";
@@ -284,9 +286,36 @@ int main()
 
 				cout << "countArticleInOrders="<< countArticleInOrders;
 				cout << endl;
+
+				int dateLength = textLength(date);
+				
+				cout << "dateLength=" << dateLength<<endl;
+				for (int i = 0; i < dateLength; i++) {
+					completеОrder[i] = date[i];
+					cout << completеОrder[i];
+				}
+				cout << endl;
+				//completеОrder[dateLength] = ';';
+				///*dateLength++;*/
+				int indexForOrder = dateLength;
 				for (int j = 0; j < countArticleInOrders; j++) {
 					cout << orders[j] << endl;
+					
+					completеОrder[indexForOrder++] = ';';
+					completеОrder[indexForOrder++] = orders[j] + '0';
+					
+					cout << "completеОrder[dateLength + j]="<<completеОrder[dateLength + j]<<endl;
+					
+					
+					cout << "completеОrder[dateLength + j + 1]=" << completеОrder[dateLength + j + 1]<<endl;
+					
+					
 				}
+				cout << endl;
+				completеОrder[indexForOrder++] = '\n';
+				completеОrder[indexForOrder] = '\0';
+				cout << "CompleteOrder=" << completеОrder;
+				writeInOrderFile(completеОrder);
 
 
 			}
