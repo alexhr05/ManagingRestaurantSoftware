@@ -14,6 +14,7 @@
 #include <iostream>
 #include <iostream>
 #include <fstream>
+#include <cmath> 
 
 using namespace std;
 
@@ -298,11 +299,26 @@ int main()
 				//completеОrder[dateLength] = ';';
 				///*dateLength++;*/
 				int indexForOrder = dateLength;
+				
 				for (int j = 0; j < countArticleInOrders; j++) {
 					cout << orders[j] << endl;
-					
 					completеОrder[indexForOrder++] = ';';
-					completеОrder[indexForOrder++] = orders[j] + '0';
+
+					if (orders[j]>=0 && orders[j]<=9) {
+						completеОrder[indexForOrder++] = orders[j] + '0';
+					}else if (orders[j] >= 10) {
+
+						int numDigits = (int)log10(orders[j]) + 1;
+						cout << "numDigits=" << numDigits<<endl;
+						for (int i = numDigits - 1 ; i >= 0; i--) {
+							int digit = orders[j] % 10;
+							cout << "Digit=" << digit << endl;
+							completеОrder[indexForOrder + i] = digit + '0';
+							orders[j] /= 10;
+						}
+						indexForOrder += numDigits;
+					}
+					
 					
 					cout << "completеОrder[dateLength + j]="<<completеОrder[dateLength + j]<<endl;
 					
