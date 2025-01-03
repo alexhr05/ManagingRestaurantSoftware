@@ -36,6 +36,8 @@ const int BUFFER_SIZE = 1024;
 
 const int MAX_SIZE_CHAR_ARRAY = 1024;
 
+const int DATE_LENGTH = 10;
+
 enum workersType {
 	waiter,
 	manager
@@ -93,6 +95,8 @@ bool searchSubString(char* main, char* sub) {
 }
 
 
+
+
 void readFromMenuFile() {
 	ifstream in(MENU_FILE);
 
@@ -103,16 +107,16 @@ void readFromMenuFile() {
 
 	char line[MAX_SIZE_CHAR_ARRAY];
 	cout << endl;
-	
+
 	while (in.getline(line, BUFFER_SIZE)) {
 		cout << endl;
 		cout << line << endl;
 		char sub[] = "Soup";
-		cout<<"isContain:"<<searchSubString(line, sub)<<endl;
+		cout << "isContain:" << searchSubString(line, sub) << endl;
 	}
 	cout << endl;
 
-	
+
 	in.close();
 }
 
@@ -131,16 +135,121 @@ void readFromOrderFile() {
 	char line[MAX_SIZE_CHAR_ARRAY];
 	int counterChar = 0;
 	while (in.getline(line, BUFFER_SIZE)) {
-		/*while (*line != '\0') {
-			counterChar++;
-			line++;
-		}*/
-
 		cout << line << endl;
 	}
 
 	in.close();
 }
+
+char* showOrders() {
+	ifstream in(ORDER_FILE);
+	char orders[MAX_SIZE_CHAR_ARRAY];
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int index = 0;
+	int counter = 1;
+	while (in.getline(line, BUFFER_SIZE)) {
+		cout << (counter++) << "-" << line << endl;
+		for (int i = 0; i < textLength(line); i++) {
+			orders[index++] = line[i];
+		}
+		orders[index++] = '\n';
+
+	}
+	orders[index] = '\0';
+	in.close();
+
+	return orders;
+}
+
+void searchArticleInMenu(int numberOrder) {
+	ifstream in(MENU_FILE);
+	if (!in.is_open()) {
+		cout << "Error";
+		return;
+	}
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int index = 0;
+	while (in.getline(line, BUFFER_SIZE)) {
+		int i = 0;
+		int articleId = 0;
+
+		while (line[i] >= '0' && line[i] <= '9') {
+			articleId = articleId * 10 + line[i] - '0';
+			i++;
+		}
+
+		if (articleId == numberOrder) {
+			// Това е за да може да започне директно да чете от името на артикула във файла, заради синтаксиса на файла
+			int j = i + 1;
+			while (line[j] != ';') {
+				cout << line[j];
+				j++;
+			}
+			cout << endl;
+		}
+		index = 0;
+	}
+}
+
+void findNameOfArticleInMenu(char* line) {
+	int numberOrder = 0;
+
+	// +1 е, за да пропусне символа точкаи запетая и да почне да чете директно от поръчка номерата на артикулите
+	for (int j = DATE_LENGTH + 1; j <= textLength(line); j++) {
+
+		while (line[j] >= '0' && line[j] <= '9') {
+			numberOrder = numberOrder * 10 + line[j] - '0';
+			j++;
+		}
+
+		if (line[j] == ';') {
+			searchArticleInMenu(numberOrder);
+			numberOrder = 0;
+		}
+	}
+
+	cout << endl;
+
+}
+
+void showDetailNameOfArticleInOrder(char* ordersFromFile, int order) {
+	ifstream in(ORDER_FILE);
+	if (!in.is_open()) {
+		cout << "Error";
+		return;
+	}
+
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int countRow = 1;
+
+	while (countRow <= order && !in.eof()) {
+		in.getline(line, BUFFER_SIZE);
+		countRow++;
+	
+	}
+
+	cout << "Order number " << countRow - 1<<":"<<endl;
+	findNameOfArticleInMenu(line);
+	/*cout << "line2=" << line << endl;*/
+	in.close();
+}
+
+void showDetailedOrder() {
+	char* ordersFromFile = showOrders();
+
+	cout << endl;
+	int order;
+	cout << "Enter number to see details of order:";
+	cin >> order;
+	showDetailNameOfArticleInOrder(ordersFromFile, order);
+
+}
+
+
 
 void writeInWarehouseFile(char* text) {
 	ofstream file(ORDER_FILE, ios::app);
@@ -176,25 +285,15 @@ bool isExistArticle(int articleId) {
 		cout << "Error";
 
 	}
-	int i = 0;
+	int i;
 	int digit = 0;
 	while (file.getline(line, BUFFER_SIZE)) {
 		i = 0;
-		cout << "digitChar=" << articleId << endl;
-		
-		cout << "line[0]=" << line[0] << endl;
-		cout << "Novo vlizane;";
 		while (line[i] >= '0' && line[i] <= '9') {
-			 digit = digit*10 + line[i] - '0';
-			 cout << endl;
-			 cout << "line["<<i<<"]=" << line[i]<<endl;
-			 cout << "digit=" << digit<<endl;
-			 i++;
+			digit = digit * 10 + line[i] - '0';
+			i++;
 		}
-		
-		
-		
-		
+
 		if (articleId == digit) {
 			return true;
 		}
@@ -209,8 +308,8 @@ bool isExistArticle(int articleId) {
 
 void entryTitles() {
 	cout << endl;
-	
-	cout << "    WELCOME TO"<<endl;
+
+	cout << "    WELCOME TO" << endl;
 	cout << "    RESTAURANT SOFTWARE " << endl;
 	cout << endl;
 
@@ -245,7 +344,7 @@ int main()
 		cout << endl;
 
 		do {
-			
+
 			cout << "What you want to choose from above:";
 			cin >> action;
 
@@ -254,15 +353,15 @@ int main()
 			}
 			else if (action == 2) {
 				int articleId;
-			
+
 
 				int countArticleInOrders = 0;
 				bool isExistArticleInMenu;
 				do {
 					cout << endl;
-					
-					cout << "Now you can make order from the menu (if you want to finish order, enter 0(zero):"<<endl;
-					
+
+					cout << "Now you can make order from the menu (if you want to finish order, enter 0(zero):" << endl;
+
 					cin >> articleId;
 					if (articleId == 0) {
 						break;
@@ -277,40 +376,41 @@ int main()
 					else {
 						cout << "Article is NOT CONTAINED" << endl;
 					}
-					
+
 
 				} while (isExistArticleInMenu != false);
 
 				if (isExistArticleInMenu == false) {
+
 					countArticleInOrders = 0;
 				}
 
-				cout << "countArticleInOrders="<< countArticleInOrders;
+				cout << "countArticleInOrders=" << countArticleInOrders;
 				cout << endl;
 
 				int dateLength = textLength(date);
-				
-				cout << "dateLength=" << dateLength<<endl;
+
+				cout << "dateLength=" << dateLength << endl;
 				for (int i = 0; i < dateLength; i++) {
 					completеОrder[i] = date[i];
 					cout << completеОrder[i];
 				}
 				cout << endl;
-				//completеОrder[dateLength] = ';';
-				///*dateLength++;*/
 				int indexForOrder = dateLength;
-				
+
+				completеОrder[indexForOrder++] = ';';
 				for (int j = 0; j < countArticleInOrders; j++) {
 					cout << orders[j] << endl;
-					completеОrder[indexForOrder++] = ';';
 
-					if (orders[j]>=0 && orders[j]<=9) {
+
+					if (orders[j] >= 0 && orders[j] <= 9) {
 						completеОrder[indexForOrder++] = orders[j] + '0';
-					}else if (orders[j] >= 10) {
+					}
+					else if (orders[j] >= 10) {
 
 						int numDigits = (int)log10(orders[j]) + 1;
-						cout << "numDigits=" << numDigits<<endl;
-						for (int i = numDigits - 1 ; i >= 0; i--) {
+						cout << "numDigits=" << numDigits << endl;
+						for (int i = numDigits - 1; i >= 0; i--) {
 							int digit = orders[j] % 10;
 							cout << "Digit=" << digit << endl;
 							completеОrder[indexForOrder + i] = digit + '0';
@@ -318,14 +418,8 @@ int main()
 						}
 						indexForOrder += numDigits;
 					}
-					
-					
-					cout << "completеОrder[dateLength + j]="<<completеОrder[dateLength + j]<<endl;
-					
-					
-					cout << "completеОrder[dateLength + j + 1]=" << completеОrder[dateLength + j + 1]<<endl;
-					
-					
+					completеОrder[indexForOrder++] = ';';
+
 				}
 				cout << endl;
 				completеОrder[indexForOrder++] = '\n';
@@ -336,10 +430,10 @@ int main()
 
 			}
 			else if (action == 3) {
-				
+
 			}
 			else if (action == 4) {
-
+				showDetailedOrder();
 			}
 			else if (action == 5) {
 
