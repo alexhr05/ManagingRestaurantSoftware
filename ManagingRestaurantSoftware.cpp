@@ -141,29 +141,6 @@ void readFromOrderFile() {
 	in.close();
 }
 
-char* showOrders() {
-	ifstream in(ORDER_FILE);
-	char orders[MAX_SIZE_CHAR_ARRAY];
-
-	if (!in.is_open()) {
-		cout << "Error";
-	}
-	char line[MAX_SIZE_CHAR_ARRAY];
-	int index = 0;
-	int counter = 1;
-	while (in.getline(line, BUFFER_SIZE)) {
-		cout << (counter++) << "-" << line << endl;
-		for (int i = 0; i < textLength(line); i++) {
-			orders[index++] = line[i];
-		}
-		orders[index++] = '\n';
-
-	}
-	orders[index] = '\0';
-	in.close();
-
-	return orders;
-}
 
 void searchArticleInMenu(int numberOrder) {
 	ifstream in(MENU_FILE);
@@ -181,7 +158,6 @@ void searchArticleInMenu(int numberOrder) {
 			articleId = articleId * 10 + line[i] - '0';
 			i++;
 		}
-
 		if (articleId == numberOrder) {
 			// Това е за да може да започне директно да чете от името на артикула във файла, заради синтаксиса на файла
 			int j = i + 1;
@@ -189,10 +165,12 @@ void searchArticleInMenu(int numberOrder) {
 				cout << line[j];
 				j++;
 			}
-			cout << endl;
+
 		}
+		
 		index = 0;
 	}
+	in.close();
 }
 
 void findNameOfArticleInMenu(char* line) {
@@ -208,48 +186,50 @@ void findNameOfArticleInMenu(char* line) {
 
 		if (line[j] == ';') {
 			searchArticleInMenu(numberOrder);
+			cout << ", ";
 			numberOrder = 0;
 		}
+		
 	}
 
 	cout << endl;
 
 }
 
-void showDetailNameOfArticleInOrder(char* ordersFromFile, int order) {
+//void showDetailNameOfArticleInOrder() {
+//	ifstream in(ORDER_FILE);
+//	if (!in.is_open()) {
+//		cout << "Error";
+//		return;
+//	}
+//
+//	char line[MAX_SIZE_CHAR_ARRAY];
+//
+//	while (!in.eof()) {
+//		in.getline(line, BUFFER_SIZE);
+//	}
+//	
+//	in.close();
+//}
+
+void showOrders() {
 	ifstream in(ORDER_FILE);
+
 	if (!in.is_open()) {
 		cout << "Error";
-		return;
 	}
-
 	char line[MAX_SIZE_CHAR_ARRAY];
-	int countRow = 1;
+	int index = 0;
+	int counter = 1;
+	while (in.getline(line, BUFFER_SIZE)) {
+		cout << (counter++) << " - " << line;
+		cout << "  -  ";
+		findNameOfArticleInMenu(line);
+		
 
-	while (countRow <= order && !in.eof()) {
-		in.getline(line, BUFFER_SIZE);
-		countRow++;
-	
 	}
-
-	cout << "Order number " << countRow - 1<<":"<<endl;
-	findNameOfArticleInMenu(line);
-	/*cout << "line2=" << line << endl;*/
 	in.close();
 }
-
-void showDetailedOrder() {
-	char* ordersFromFile = showOrders();
-
-	cout << endl;
-	int order;
-	cout << "Enter number to see details of order:";
-	cin >> order;
-	showDetailNameOfArticleInOrder(ordersFromFile, order);
-
-}
-
-
 
 void writeInWarehouseFile(char* text) {
 	ofstream file(ORDER_FILE, ios::app);
@@ -269,7 +249,7 @@ void writeInMenuFile(char* text) {
 
 }
 
-void writeInOrderFile(char* text) {
+void writeInOrderFileAppend(char* text) {
 	ofstream file(ORDER_FILE, ios::app);
 
 	file << text;
@@ -277,6 +257,72 @@ void writeInOrderFile(char* text) {
 	file.close();
 
 }
+
+void writeInOrderFile(char* text) {
+	ofstream file(ORDER_FILE);
+
+	file << text;
+
+	file.close();
+
+}
+
+void orderCancellation() {
+	ifstream in(ORDER_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+	char line[MAX_SIZE_CHAR_ARRAY];
+	char orderFileContent[MAX_SIZE_CHAR_ARRAY];
+	int countRow = 0;
+	int index = 0;
+	while (in.getline(line, MAX_SIZE_CHAR_ARRAY)) {
+		for (int i = 0; i < textLength(line); i++) {
+			orderFileContent[index++] = line[i];
+		}
+		orderFileContent[index++] = '\n';
+		countRow++;
+	}
+	orderFileContent[index] = '\0';
+	cout << "orderFileContent="<<orderFileContent << endl;
+	int countToLastOrder = 0;
+	int indexWithoutLastOrders = 0;
+	char withoutLastOrders[MAX_SIZE_CHAR_ARRAY];
+	while (countToLastOrder < (countRow - 1)) {
+		cout << "orderFileContent="<< countToLastOrder << endl;
+		cout << "countRow=" << countRow << endl;
+
+		if (orderFileContent[indexWithoutLastOrders] == '\n') {
+			countToLastOrder++;
+			withoutLastOrders[indexWithoutLastOrders] = orderFileContent[indexWithoutLastOrders];
+		}
+		withoutLastOrders[indexWithoutLastOrders] = orderFileContent[indexWithoutLastOrders];
+		indexWithoutLastOrders++;
+	}
+	
+	/*withoutLastOrders[indexWithoutLastOrders++] = '\n';*/
+	withoutLastOrders[indexWithoutLastOrders] = '\0';
+	cout << "withoutLastOrders=" << withoutLastOrders << endl;
+	writeInOrderFile(withoutLastOrders);
+
+	cout << "Cancel succesfully!!!";
+
+	in.close();
+}
+
+
+
+
+void showDetailedOrder() {
+	showOrders();
+
+	cout << endl;
+
+}
+
+
+
 bool isExistArticle(int articleId) {
 	ifstream file(MENU_FILE);
 	char line[BUFFER_SIZE];
@@ -430,7 +476,7 @@ int main()
 
 			}
 			else if (action == 3) {
-
+				orderCancellation();
 			}
 			else if (action == 4) {
 				showDetailedOrder();
