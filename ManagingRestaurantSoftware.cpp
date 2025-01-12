@@ -24,9 +24,7 @@ const char MENU_FILE[] = "menu.txt";
 
 const char ORDER_FILE[] = "order.txt";
 
-const char TURNOIVER_PER_DAY_FILE[] = "turnoverPerDay.txt";
-
-const char _FILE[] = "order.txt";
+const char TODAY_DATE_FILE[] = "todayDate.txt";
 
 const char WAITER_MENU_OPTIONS[] = "1. Overview of the menu\n2. View order\n3. Order cancellation\n4. View past orders\n5. View past orders in alphabetical order as well as the number of orders of each item\n6. View the profits for the day";
 
@@ -39,8 +37,8 @@ const int MAX_SIZE_CHAR_ARRAY = 1024;
 const int DATE_LENGTH = 10;
 
 enum workersType {
-	waiter,
-	manager
+	waiter = 1,
+	manager = 2
 };
 
 int textLength(char* text) {
@@ -116,8 +114,31 @@ void readFromMenuFile() {
 	}
 	cout << endl;
 
-
 	in.close();
+}
+
+int readFromTodayDateFile() {
+	ifstream in(TODAY_DATE_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+		return 0;
+	}
+
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int day = 0;
+	int index = 0;
+	//Взима единствения елемент на файла, който е просто ден
+	in.getline(line, BUFFER_SIZE);
+
+	while (line[index] >= '0' && line[index] <= '9') {
+		day = day * 10 + (line[index] - '0');
+		index++;
+	}
+	cout << "day=" << day << endl;
+	in.close();
+
+	return day;
 }
 
 
@@ -155,7 +176,7 @@ void searchArticleInMenu(int numberOrder) {
 		int articleId = 0;
 
 		while (line[i] >= '0' && line[i] <= '9') {
-			articleId = articleId * 10 + line[i] - '0';
+			articleId = articleId * 10 + (line[i] - '0');
 			i++;
 		}
 		if (articleId == numberOrder) {
@@ -167,7 +188,7 @@ void searchArticleInMenu(int numberOrder) {
 			}
 
 		}
-		
+
 		index = 0;
 	}
 	in.close();
@@ -180,7 +201,7 @@ void findNameOfArticleInMenu(char* line) {
 	for (int j = DATE_LENGTH + 1; j <= textLength(line); j++) {
 
 		while (line[j] >= '0' && line[j] <= '9') {
-			numberOrder = numberOrder * 10 + line[j] - '0';
+			numberOrder = numberOrder * 10 + (line[j] - '0');
 			j++;
 		}
 
@@ -189,28 +210,128 @@ void findNameOfArticleInMenu(char* line) {
 			cout << ", ";
 			numberOrder = 0;
 		}
-		
+
 	}
 
 	cout << endl;
 
 }
 
-//void showDetailNameOfArticleInOrder() {
-//	ifstream in(ORDER_FILE);
-//	if (!in.is_open()) {
-//		cout << "Error";
-//		return;
-//	}
-//
-//	char line[MAX_SIZE_CHAR_ARRAY];
-//
-//	while (!in.eof()) {
-//		in.getline(line, BUFFER_SIZE);
-//	}
-//	
-//	in.close();
-//}
+
+float searchPriceInMenu(int numberOrder) {
+	ifstream in(MENU_FILE);
+	if (!in.is_open()) {
+		cout << "Error";
+		return 0;
+	}
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int index = 0;
+	int i = 0;
+	int articleId = 0;
+	float wholeNumberPart = 0;
+	float fractionalNumberPart = 0;
+	float sumOfPrice = 0;
+ 
+	while (in.getline(line, BUFFER_SIZE)) {
+		i = 0;
+		articleId = 0;
+
+		while (line[i] >= '0' && line[i] <= '9') {
+			articleId = articleId * 10 + (line[i] - '0');
+			i++;
+		}
+		if (articleId == numberOrder) {
+			cout << "articleId=" << articleId<<endl;
+			// Това е за да може да започне директно да чете от името на артикула във файла, заради синтаксиса на файла
+			while (line[i] < '0' || line[i] > '9') {
+				i++;
+			}
+
+			while (line[i] >= '0' && line[i] <= '9') {
+				wholeNumberPart = wholeNumberPart * 10 + (line[i] - '0');
+				i++;
+			}
+			
+			//За да прескочим точката в цената и да отида диркетно на дробната част от числото
+			i++;
+			fractionalNumberPart = (line[i] - '0') * 10 + (line[i + 1] - '0');
+
+			sumOfPrice = wholeNumberPart + (fractionalNumberPart / 100);
+
+			cout << "sumOfPrice=" << sumOfPrice << endl;
+			cout << "wholeNumberPart=" << wholeNumberPart << endl;
+			cout << "line[i] and line[i+1]=" << line[i];
+			cout << line[i+1] << endl;
+			cout << "fractionalNumberPart=" << fractionalNumberPart << endl;
+
+
+		}
+
+		index = 0;
+	}
+	in.close();
+	return sumOfPrice;
+}
+
+float findPriceOfArticle(char* line) {
+	int numberOrder = 0;
+	float turnoverFromOrder = 0;
+	// +1 е, за да пропусне символа точкаи запетая и да почне да чете директно от поръчка номерата на артикулите
+	for (int j = DATE_LENGTH + 1; j <= textLength(line); j++) {
+
+		while (line[j] >= '0' && line[j] <= '9') {
+			numberOrder = numberOrder * 10 + (line[j] - '0');
+			j++;
+		}
+
+		if (line[j] == ';') {
+			turnoverFromOrder += searchPriceInMenu(numberOrder);
+			numberOrder = 0;
+		}
+
+	}
+
+	cout << endl;
+
+	return turnoverFromOrder;
+
+}
+
+void showTurnoverFromToday() {
+	ifstream in(ORDER_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int index = 0;
+	int counter = 1;
+	cout << "Minava predi data";
+	int todayDay = readFromTodayDateFile();
+	int dayFromDate = 0;
+	float finalTurnOverForToday = 0;
+
+	while (in.getline(line, BUFFER_SIZE)) {
+		dayFromDate = 0;
+		index = 0;
+		while (line[index] >= '0' && line[index] <= '9') {
+			dayFromDate = dayFromDate*10 + (line[index] - '0');
+			cout << line[index] << endl;
+			index++;
+		}
+		if (dayFromDate == todayDay) {
+			finalTurnOverForToday += findPriceOfArticle(line);
+		}
+	}
+
+	cout << "TurnOver for Today(" << todayDay << "): " << finalTurnOverForToday<<endl;
+	in.close();
+
+}
+
+
+
 
 void showOrders() {
 	ifstream in(ORDER_FILE);
@@ -221,12 +342,13 @@ void showOrders() {
 	char line[MAX_SIZE_CHAR_ARRAY];
 	int index = 0;
 	int counter = 1;
+	
+
 	while (in.getline(line, BUFFER_SIZE)) {
 		cout << (counter++) << " - " << line;
 		cout << "  -  ";
-		findNameOfArticleInMenu(line);
-		
 
+		findNameOfArticleInMenu(line);
 	}
 	in.close();
 }
@@ -285,13 +407,15 @@ void orderCancellation() {
 		countRow++;
 	}
 	orderFileContent[index] = '\0';
-	cout << "orderFileContent="<<orderFileContent << endl;
+	//cout << "orderFileContent="<<orderFileContent << endl;
+
 	int countToLastOrder = 0;
 	int indexWithoutLastOrders = 0;
 	char withoutLastOrders[MAX_SIZE_CHAR_ARRAY];
+
 	while (countToLastOrder < (countRow - 1)) {
-		cout << "orderFileContent="<< countToLastOrder << endl;
-		cout << "countRow=" << countRow << endl;
+		//cout << "orderFileContent="<< countToLastOrder << endl;
+		//cout << "countRow=" << countRow << endl;
 
 		if (orderFileContent[indexWithoutLastOrders] == '\n') {
 			countToLastOrder++;
@@ -300,10 +424,9 @@ void orderCancellation() {
 		withoutLastOrders[indexWithoutLastOrders] = orderFileContent[indexWithoutLastOrders];
 		indexWithoutLastOrders++;
 	}
-	
-	/*withoutLastOrders[indexWithoutLastOrders++] = '\n';*/
+
 	withoutLastOrders[indexWithoutLastOrders] = '\0';
-	cout << "withoutLastOrders=" << withoutLastOrders << endl;
+	/*cout << "withoutLastOrders=" << withoutLastOrders << endl;*/
 	writeInOrderFile(withoutLastOrders);
 
 	cout << "Cancel succesfully!!!";
@@ -336,7 +459,7 @@ bool isExistArticle(int articleId) {
 	while (file.getline(line, BUFFER_SIZE)) {
 		i = 0;
 		while (line[i] >= '0' && line[i] <= '9') {
-			digit = digit * 10 + line[i] - '0';
+			digit = digit * 10 + (line[i] - '0');
 			i++;
 		}
 
@@ -350,6 +473,7 @@ bool isExistArticle(int articleId) {
 	file.close();
 	return false;
 }
+
 
 
 void entryTitles() {
@@ -482,9 +606,12 @@ int main()
 				showDetailedOrder();
 			}
 			else if (action == 5) {
-
+				
 			}
-		} while (action >= 1 || action <= 5);
+			else if (action == 6) {
+				showTurnoverFromToday();
+			}
+		} while (action >= 1 || action <= 6);
 
 	}
 	else if (typeOfWorker == 'm') {
