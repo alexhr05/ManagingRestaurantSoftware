@@ -220,7 +220,7 @@ void findNameOfArticleInMenu(char* line) {
 }
 
 
-float searchPriceInMenu(int numberOrder) {
+int searchPriceInMenu(int numberOrder) {
 	ifstream in(MENU_FILE);
 	if (!in.is_open()) {
 		cout << "Error";
@@ -230,14 +230,12 @@ float searchPriceInMenu(int numberOrder) {
 	int index = 0;
 	int i = 0;
 	int articleId = 0;
-	float wholeNumberPart = 0;
-	float fractionalNumberPart = 0;
-	float sumOfPrice = 0;
+	int number = 0;
+	int sumOfPrice = 0;
 
 	while (in.getline(line, BUFFER_SIZE)) {
 		i = 0;
 		articleId = 0;
-
 		while (line[i] >= '0' && line[i] <= '9') {
 			articleId = articleId * 10 + (line[i] - '0');
 			i++;
@@ -250,15 +248,11 @@ float searchPriceInMenu(int numberOrder) {
 			}
 
 			while (line[i] >= '0' && line[i] <= '9') {
-				wholeNumberPart = wholeNumberPart * 10 + (line[i] - '0');
+				number = number * 10 + (line[i] - '0');
 				i++;
 			}
 
-			//За да прескочим точката в цената и да отида диркетно на дробната част от числото
-			i++;
-			fractionalNumberPart = (line[i] - '0') * 10 + (line[i + 1] - '0');
-
-			sumOfPrice = wholeNumberPart + (fractionalNumberPart / 100);
+			sumOfPrice += number;
 
 			/*cout << "sumOfPrice=" << sumOfPrice << endl;
 			cout << "wholeNumberPart=" << wholeNumberPart << endl;
@@ -273,9 +267,9 @@ float searchPriceInMenu(int numberOrder) {
 	return sumOfPrice;
 }
 
-float findPriceOfArticle(char* line) {
+int findPriceOfArticle(char* line) {
 	int numberOrder = 0;
-	float turnoverFromOrder = 0;
+	int turnoverFromOrder = 0;
 	// +1 е, за да пропусне символа точкаи запетая и да почне да чете директно от поръчка номерата на артикулите
 	for (int j = DATE_LENGTH + 1; j <= textLength(line); j++) {
 
@@ -362,8 +356,7 @@ void showTurnoverForToday() {
 	int dayFromDate;
 	int index = 0;
 	float turnoverForToday = 0;
-	int wholePartNumber = 0;
-	float fractionalNumberPart = 0;
+	int number = 0;
 
 	while (in.getline(line, BUFFER_SIZE)) {
 		dayFromDate = 0;
@@ -379,21 +372,15 @@ void showTurnoverForToday() {
 			}
 			index++;
 			while (line[index] >= '0' && line[index] <= '9') {
-				wholePartNumber = wholePartNumber * 10 + (line[index] - '0');
+				number = number * 10 + (line[index] - '0');
 				index++;
 			}
-			if (line[index] == '.') {
-				index++;
-				while (line[index] >= '0' && line[index] <= '9') {
-					fractionalNumberPart = fractionalNumberPart * 10 + (line[index] - '0');
-					index++;
-				}
-			}
-			turnoverForToday += wholePartNumber + (fractionalNumberPart / 100);
+
+			turnoverForToday += number;
 
 		}
 	}
-	cout << "Turnover For Today: " << turnoverForToday << endl;
+	cout << "Turnover For Today: " << turnoverForToday / 100 << endl;
 
 	in.close();
 }
@@ -436,9 +423,17 @@ void writeInOrderFile(char* text) {
 
 void writeInTurnoverPerDayFile(char* updatedTurnover) {
 	ofstream file(TURNOVER_PER_DAY_FILE);
-	cout << "MInava";
+
 	file << updatedTurnover;
-	
+
+	file.close();
+}
+
+void appendInTurnoverPerDayFile(char* updatedTurnover) {
+	ofstream file(TURNOVER_PER_DAY_FILE, ios::app);
+	cout << "conentFileFInalVersion=" << updatedTurnover << endl;
+	file << updatedTurnover;
+
 	file.close();
 
 }
@@ -461,15 +456,12 @@ void orderCancellation() {
 		countRow++;
 	}
 	orderFileContent[index] = '\0';
-	//cout << "orderFileContent="<<orderFileContent << endl;
 
 	int countToLastOrder = 0;
 	int indexWithoutLastOrders = 0;
 	char withoutLastOrders[MAX_SIZE_CHAR_ARRAY];
 
 	while (countToLastOrder < (countRow - 1)) {
-		//cout << "orderFileContent="<< countToLastOrder << endl;
-		//cout << "countRow=" << countRow << endl;
 
 		if (orderFileContent[indexWithoutLastOrders] == '\n') {
 			countToLastOrder++;
@@ -480,7 +472,6 @@ void orderCancellation() {
 	}
 
 	withoutLastOrders[indexWithoutLastOrders] = '\0';
-	/*cout << "withoutLastOrders=" << withoutLastOrders << endl;*/
 	writeInOrderFile(withoutLastOrders);
 
 	cout << "Cancel succesfully!!!";
@@ -542,19 +533,20 @@ char* getTodayDate() {
 	int todayDay = readFromTodayDateFile();
 	char dozens;
 	char units;
-	char* todayDate = new char[DATE_LENGTH];
+	char* todayDate = new char[DATE_LENGTH+1];
 	const int numberMonths = 12;
 	int index = 0;
 	int month = getMonthOfDayFile();
+
 	if (todayDay >= 0 && todayDay <= 9) {
 		units = todayDay + '0';
 		todayDate[index++] = '0';
 		todayDate[index++] = units;
 	}
-	else if (todayDay >= 10 && todayDay <= 12) {
+	else if (todayDay >= 10 && todayDay <= 31) {
 		units = todayDay % 10 + '0';
 		todayDay /= 10;
-		dozens = todayDay % 10;
+		dozens = todayDay % 10 + '0';
 		todayDate[index++] = dozens;
 		todayDate[index++] = units;
 	}
@@ -567,7 +559,7 @@ char* getTodayDate() {
 	else if (month >= 10 && month <= 12) {
 		units = month % 10 + '0';
 		month /= 10;
-		dozens = month % 10;
+		dozens = month % 10 + '0';
 		todayDate[index++] = dozens;
 		todayDate[index++] = units;
 	}
@@ -584,8 +576,8 @@ char* getTodayDate() {
 int getIndexLastLineForTurnover(char* contentFile, int counterNewLine) {
 	int indexLine = 0;
 	int indexContentFile = 0;
-	
-	while (indexLine < counterNewLine - 1) {
+
+	while (indexLine < counterNewLine) {
 
 		while (contentFile[indexContentFile] != '\n') {
 			indexContentFile++;
@@ -615,117 +607,132 @@ int countDigits(int copyOfturnoverForToday) {
 	return counter;
 }
 
-void insertElement(char* contentFile, int size, char element, int position) {
-	if (position < 0 || position > size) {
-		cout << "Invalid insertion position." << endl;
-		return;
+void reverseArray(char* charArray, int size) {
+	for (int i = 0; i < size - 1; i++) {
+		for (int j = 0; j < size - i - 1; j++) {
+			int temp = charArray[j];
+			charArray[j] = charArray[j + 1];
+			charArray[j + 1] = temp;
+		}
 	}
-	
-	// Премества елементите надясно
-	for (int i = size; i > position; --i) {
-		contentFile[i] = contentFile[i - 1];
-	}
-
-	contentFile[position] = element;
-	size++;
-	cout << "size=" << size << endl;
-	contentFile[size++] = '\n';
-	contentFile[size] = '\0';
-	cout << "contentFileFROM INSERTION=" << contentFile << endl;
-	
 }
 
-void changeTurnoverForTodayInString(char* contentFile,float turnoverForToday, int indexLastLine) {
+void changeTurnoverForTodayInString(char* contentFile, int turnoverForToday, int indexLastLine) {
+	//Конвертира число от float в int тип, като закгрълява до най-близкото цяло число
 	// Измествам десетичната запетая надясно, за да направя цяло число
-	turnoverForToday *= 100;
-	cout << "turnoverForToday=" << turnoverForToday << endl;
-	int copyOfturnoverForToday = turnoverForToday;
-	int sizeNewTurnover = countDigits(copyOfturnoverForToday);
-	char* newTurnover = new char[sizeNewTurnover +1];
+
+	int sizeNewTurnover = countDigits(turnoverForToday);
+	char* newTurnover = new char[sizeNewTurnover + 1];
 	int temporaryDigit = 0;
 	int index = 0;
-	cout << "turnoverForToday=" << turnoverForToday<<endl;
-	while (copyOfturnoverForToday != 0) {
-			temporaryDigit = copyOfturnoverForToday % 10;
-			newTurnover[index++] = temporaryDigit + '0';
-			copyOfturnoverForToday /= 10;
+
+	while (turnoverForToday != 0) {
+		temporaryDigit = turnoverForToday % 10;
+		newTurnover[index++] = temporaryDigit + '0';
+		turnoverForToday /= 10;
 	}
-	cout << "turnoverForToday=" << turnoverForToday << endl;
 	newTurnover[index] = '\0';
-	cout << "newTurnover=" << newTurnover << endl;
-	for (int i = 0; i < sizeNewTurnover -1; i++) {
-		for (int j = 0; j < sizeNewTurnover -i -1; j++) {
+	/*cout << "newTurnover=" << newTurnover << endl;*/
+	reverseArray(newTurnover, sizeNewTurnover);
+	/*for (int i = 0; i < sizeNewTurnover - 1; i++) {
+		for (int j = 0; j < sizeNewTurnover - i - 1; j++) {
 			int temp = newTurnover[j];
 			newTurnover[j] = newTurnover[j + 1];
 			newTurnover[j + 1] = temp;
 		}
-	}
-	
-	cout << "indexLastLine=" << indexLastLine << endl;
-	cout << "reversedNewTurnover=" << newTurnover << endl;
-	index = 0;
-	while (newTurnover[indexLastLine] != '\0') {
-		contentFile[indexLastLine++] = newTurnover[index++];
-		//cout << "contentFile[indexLastLine]=" << contentFile[indexLastLine - 1]<<endl;
-	}
-	
-	insertElement(contentFile, textLength(contentFile), '.', textLength(contentFile) - 2);
+	}*/
 
-	cout << "MInava predi Pisane" << endl;
+	index = 0;
+	while (newTurnover[index] != '\0') {
+		contentFile[indexLastLine++] = newTurnover[index++];
+	}
+	contentFile[indexLastLine] = '\0';
+
 	writeInTurnoverPerDayFile(contentFile);
-	cout << "MInava sled Pisane" << endl;
 	delete[] newTurnover;
 }
 
-void overwriteTodayTurnoverInFile(char* contentFile, int sumPriceArticle, int counterNewLine) {
+
+void addTurnoverForTodayInString(int sumPriceArticle) {
+	int sizeNewTurnover = countDigits(sumPriceArticle);
+	char* todayDateForFile = getTodayDate();
+	char* newTurnover = new char[sizeNewTurnover + 1];
+	int temporaryDigit = 0;
+	int indexLineToAppend = 0;
+	int index = 0;
+	char* lineToAppend = new char[textLength(todayDateForFile) + sizeNewTurnover + 1];
+	while (sumPriceArticle != 0) {
+		temporaryDigit = sumPriceArticle % 10;
+		newTurnover[index++] = temporaryDigit + '0';
+		sumPriceArticle /= 10;
+	}
+	newTurnover[index] = '\0';
+	
+	reverseArray(newTurnover, sizeNewTurnover);
+	
+	index = 0;
+	// Да запише реда на нов ред във файла
+	cout << "todayDateForFile=" << todayDateForFile << endl;
+	lineToAppend[indexLineToAppend++] = '\n';
+	while (todayDateForFile[index] != '\0') {
+		lineToAppend[indexLineToAppend] = todayDateForFile[index];
+		indexLineToAppend++;
+		index++;
+	}
+	index = 0;
+
+	//Да добавя разделител
+	lineToAppend[indexLineToAppend++] = ';';
+	while (newTurnover[index] != '\0') {
+		lineToAppend[indexLineToAppend] = newTurnover[index];
+		index++;
+		indexLineToAppend++;
+	}
+	lineToAppend[indexLineToAppend] = '\0';
+	appendInTurnoverPerDayFile(lineToAppend);
+	delete todayDateForFile;
+	delete[] newTurnover;
+}
+
+void overwriteTodayTurnoverInFile(char* contentFile, int sumPriceArticle, int counterNewLine, bool isExistTodayDate) {
 	int indexLastLine = getIndexLastLineForTurnover(contentFile, counterNewLine);
-	cout << "indexLastLine=" << indexLastLine << endl;
-	cout << "contentFile[indexLastLine]=" << contentFile[indexLastLine] << endl;
 	// Прескачам дължината на датата, която е фиксирана и директно почвам да заменям стойността на предишния оборот
 	indexLastLine = indexLastLine + DATE_LENGTH + 1;
-	cout << "indexContentFile=" << indexLastLine << endl;
 	int index = 0;
 	int dayOfDate = 0;
 	char sumPrice[MAX_SIZE_CHAR_ARRAY];
 
 	index = indexLastLine;
-	int wholePartNumber = 0;
-	float fractionalNumberPart = 0;
-	float turnoverForToday = 0;
-	while (contentFile[index] != '\0') {
-		while (contentFile[index] >= '0' && contentFile[index] <= '9') {
-			wholePartNumber = wholePartNumber * 10 + (contentFile[index] - '0');
+	int number = 0;
+	int turnoverForToday = 0;
+	while (contentFile[index] != '\n' && contentFile[index] != '\0') {
+		if (contentFile[index] >= '0' && contentFile[index] <= '9') {
+			number = number * 10 + (contentFile[index] - '0');
 			index++;
 		}
-		if (contentFile[index] == '.') {
-			index++;
-			while (contentFile[index] >= '0' && contentFile[index] <= '9') {
-				fractionalNumberPart = fractionalNumberPart * 10 + (contentFile[index] - '0');
-				index++;
-			}
-		}
-		turnoverForToday += wholePartNumber + (fractionalNumberPart / 100);
-		
-		index++;
-	}
-	
-	turnoverForToday += sumPriceArticle;
 
-	/*cout << "turnoverForTday=" << turnoverForToday << endl;*/
-	changeTurnoverForTodayInString(contentFile, turnoverForToday, indexLastLine);
+	}
+	turnoverForToday += number;
+	turnoverForToday += sumPriceArticle;
 	cout << "sumPriceArticle=" << sumPriceArticle << endl;
+	cout << "isExistTodayDate=" << isExistTodayDate << endl;
+	if (isExistTodayDate) {
+		changeTurnoverForTodayInString(contentFile, turnoverForToday, indexLastLine);
+	}
+	else {
+		addTurnoverForTodayInString(sumPriceArticle);
+	}
 
 	cout << endl;
 }
 
-void updateTurnoverInFile(char* todayDate, float sumPriceArticle) {
+void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 	ifstream in(TURNOVER_PER_DAY_FILE);
 
 	if (!in.is_open()) {
 		cout << "Error";
 		return;
 	}
-	cout << "sumPriceArticle=" << sumPriceArticle << endl;
 
 	char line[MAX_SIZE_CHAR_ARRAY];
 	int indexContentFile = 0;
@@ -737,7 +744,7 @@ void updateTurnoverInFile(char* todayDate, float sumPriceArticle) {
 	int index = 0;
 	int counter = 0;
 	int counterNewLine = 0;
-	/*char* todayDateForFile = getTodayDate();*/
+
 	bool isExistTodayDate = false;
 	bool isIndexOnDateDay = true;
 	int indexLastLine;
@@ -754,35 +761,22 @@ void updateTurnoverInFile(char* todayDate, float sumPriceArticle) {
 			}
 			isIndexOnDateDay = false;
 		}
-
-
-
+		
 		if (todayDay == dayFromFile) {
+			cout << "todayDay=" << todayDay << "; dayFromFile=" << dayFromFile << endl;
 			isExistTodayDate = true;
 		}
 
 		if (contentFile[indexContentFile] == '\n') {
 			isIndexOnDateDay = true;
 			counterNewLine++;
-			cout << "counterNewLine=" << counterNewLine << endl;
 		}
-
-		cout << "contentFile[" << indexContentFile << "]=" << contentFile[indexContentFile] << endl;
 
 		indexContentFile++;
 	}
-	cout << "contentFile=" << textLength(contentFile) << endl;
-	cout << "contentFile=" << contentFile << endl;
-	if (isExistTodayDate) {
-		overwriteTodayTurnoverInFile(contentFile, sumPriceArticle, counterNewLine);
-		
-		
-	}
-	else {
 
-	}
-	
-	/*delete[] todayDateForFile;*/
+	overwriteTodayTurnoverInFile(contentFile, sumPriceArticle, counterNewLine, isExistTodayDate);
+
 	in.close();
 }
 
@@ -795,7 +789,7 @@ void makeOrder() {
 	bool isExistArticleInMenu;
 	char completеОrder[MAX_SIZE_CHAR_ARRAY];
 	char* todayDate = getTodayDate();
-	float sumPriceArticle = 0;
+	int sumPriceArticle = 0;
 
 	do {
 		cout << endl;
@@ -912,7 +906,6 @@ int main()
 			}
 			else if (action == 2) {
 				makeOrder();
-
 			}
 			else if (action == 3) {
 				orderCancellation();
