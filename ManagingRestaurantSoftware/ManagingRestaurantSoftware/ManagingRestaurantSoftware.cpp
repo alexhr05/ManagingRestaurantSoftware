@@ -584,6 +584,7 @@ char* getTodayDate() {
 int getIndexLastLineForTurnover(char* contentFile, int counterNewLine) {
 	int indexLine = 0;
 	int indexContentFile = 0;
+	
 	while (indexLine < counterNewLine - 1) {
 
 		while (contentFile[indexContentFile] != '\n') {
@@ -643,14 +644,10 @@ void changeTurnoverForTodayInString(char* contentFile,float turnoverForToday, in
 	char* newTurnover = new char[sizeNewTurnover +1];
 	int temporaryDigit = 0;
 	int index = 0;
-	
+	cout << "turnoverForToday=" << turnoverForToday<<endl;
 	while (copyOfturnoverForToday != 0) {
 			temporaryDigit = copyOfturnoverForToday % 10;
 			newTurnover[index++] = temporaryDigit + '0';
-			
-			cout << "temporaryDigit + '0'=" << temporaryDigit + '0' << endl;
-			cout << "index=" << index - 1;
-
 			copyOfturnoverForToday /= 10;
 	}
 	cout << "turnoverForToday=" << turnoverForToday << endl;
@@ -664,7 +661,6 @@ void changeTurnoverForTodayInString(char* contentFile,float turnoverForToday, in
 		}
 	}
 	
-	
 	cout << "indexLastLine=" << indexLastLine << endl;
 	cout << "reversedNewTurnover=" << newTurnover << endl;
 	index = 0;
@@ -674,6 +670,7 @@ void changeTurnoverForTodayInString(char* contentFile,float turnoverForToday, in
 	}
 	
 	insertElement(contentFile, textLength(contentFile), '.', textLength(contentFile) - 2);
+
 	cout << "MInava predi Pisane" << endl;
 	writeInTurnoverPerDayFile(contentFile);
 	cout << "MInava sled Pisane" << endl;
@@ -708,15 +705,14 @@ void overwriteTodayTurnoverInFile(char* contentFile, int sumPriceArticle, int co
 			}
 		}
 		turnoverForToday += wholePartNumber + (fractionalNumberPart / 100);
-		cout << "WHILEturnoverForToday=" << turnoverForToday << endl;
+		
 		index++;
 	}
-
+	
 	turnoverForToday += sumPriceArticle;
 
 	/*cout << "turnoverForTday=" << turnoverForToday << endl;*/
 	changeTurnoverForTodayInString(contentFile, turnoverForToday, indexLastLine);
-	cout << "contentFileBeforeWRiteINFILE=" << contentFile << endl;
 	cout << "sumPriceArticle=" << sumPriceArticle << endl;
 
 	cout << endl;
@@ -771,10 +767,9 @@ void updateTurnoverInFile(char* todayDate, float sumPriceArticle) {
 			cout << "counterNewLine=" << counterNewLine << endl;
 		}
 
-		indexContentFile++;
-
-
 		cout << "contentFile[" << indexContentFile << "]=" << contentFile[indexContentFile] << endl;
+
+		indexContentFile++;
 	}
 	cout << "contentFile=" << textLength(contentFile) << endl;
 	cout << "contentFile=" << contentFile << endl;
@@ -829,9 +824,6 @@ void makeOrder() {
 
 		countArticleInOrders = 0;
 	}
-
-	cout << "countArticleInOrders=" << countArticleInOrders;
-	cout << endl;
 
 	for (int i = 0; i < DATE_LENGTH; i++) {
 		completеОrder[i] = todayDate[i];
