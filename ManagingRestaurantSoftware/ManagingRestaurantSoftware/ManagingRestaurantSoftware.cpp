@@ -435,7 +435,7 @@ void writeInOrderFile(char* text) {
 }
 
 void writeInTurnoverPerDayFile(char* updatedTurnover) {
-	ofstream file(ORDER_FILE);
+	ofstream file(TURNOVER_PER_DAY_FILE);
 	cout << "MInava";
 	file << updatedTurnover;
 	
@@ -584,14 +584,10 @@ char* getTodayDate() {
 int getIndexLastLineForTurnover(char* contentFile, int counterNewLine) {
 	int indexLine = 0;
 	int indexContentFile = 0;
-	cout << "FAILa INDEX";
 	while (indexLine < counterNewLine - 1) {
-		cout << "indexLine=" << indexLine << endl;
 
 		while (contentFile[indexContentFile] != '\n') {
 			indexContentFile++;
-
-			cout << "indexContentFile=" << indexContentFile << endl;
 		}
 		indexContentFile++;
 		indexLine++;
@@ -650,16 +646,16 @@ void changeTurnoverForTodayInString(char* contentFile,float turnoverForToday, in
 	
 	while (copyOfturnoverForToday != 0) {
 			temporaryDigit = copyOfturnoverForToday % 10;
-			
 			newTurnover[index++] = temporaryDigit + '0';
+			
 			cout << "temporaryDigit + '0'=" << temporaryDigit + '0' << endl;
 			cout << "index=" << index - 1;
 
 			copyOfturnoverForToday /= 10;
-		
 	}
+	cout << "turnoverForToday=" << turnoverForToday << endl;
 	newTurnover[index] = '\0';
-	cout << "newTurnover=" << newTurnover<<endl;
+	cout << "newTurnover=" << newTurnover << endl;
 	for (int i = 0; i < sizeNewTurnover -1; i++) {
 		for (int j = 0; j < sizeNewTurnover -i -1; j++) {
 			int temp = newTurnover[j];
@@ -670,12 +666,13 @@ void changeTurnoverForTodayInString(char* contentFile,float turnoverForToday, in
 	
 	
 	cout << "indexLastLine=" << indexLastLine << endl;
-	cout << "newTurnover=" << newTurnover << endl;
+	cout << "reversedNewTurnover=" << newTurnover << endl;
 	index = 0;
 	while (newTurnover[indexLastLine] != '\0') {
 		contentFile[indexLastLine++] = newTurnover[index++];
-		cout << "contentFile[indexLastLine]=" << contentFile[indexLastLine - 1]<<endl;
+		//cout << "contentFile[indexLastLine]=" << contentFile[indexLastLine - 1]<<endl;
 	}
+	
 	insertElement(contentFile, textLength(contentFile), '.', textLength(contentFile) - 2);
 	cout << "MInava predi Pisane" << endl;
 	writeInTurnoverPerDayFile(contentFile);
@@ -683,6 +680,47 @@ void changeTurnoverForTodayInString(char* contentFile,float turnoverForToday, in
 	delete[] newTurnover;
 }
 
+void overwriteTodayTurnoverInFile(char* contentFile, int sumPriceArticle, int counterNewLine) {
+	int indexLastLine = getIndexLastLineForTurnover(contentFile, counterNewLine);
+	cout << "indexLastLine=" << indexLastLine << endl;
+	cout << "contentFile[indexLastLine]=" << contentFile[indexLastLine] << endl;
+	// Прескачам дължината на датата, която е фиксирана и директно почвам да заменям стойността на предишния оборот
+	indexLastLine = indexLastLine + DATE_LENGTH + 1;
+	cout << "indexContentFile=" << indexLastLine << endl;
+	int index = 0;
+	int dayOfDate = 0;
+	char sumPrice[MAX_SIZE_CHAR_ARRAY];
+
+	index = indexLastLine;
+	int wholePartNumber = 0;
+	float fractionalNumberPart = 0;
+	float turnoverForToday = 0;
+	while (contentFile[index] != '\0') {
+		while (contentFile[index] >= '0' && contentFile[index] <= '9') {
+			wholePartNumber = wholePartNumber * 10 + (contentFile[index] - '0');
+			index++;
+		}
+		if (contentFile[index] == '.') {
+			index++;
+			while (contentFile[index] >= '0' && contentFile[index] <= '9') {
+				fractionalNumberPart = fractionalNumberPart * 10 + (contentFile[index] - '0');
+				index++;
+			}
+		}
+		turnoverForToday += wholePartNumber + (fractionalNumberPart / 100);
+		cout << "WHILEturnoverForToday=" << turnoverForToday << endl;
+		index++;
+	}
+
+	turnoverForToday += sumPriceArticle;
+
+	/*cout << "turnoverForTday=" << turnoverForToday << endl;*/
+	changeTurnoverForTodayInString(contentFile, turnoverForToday, indexLastLine);
+	cout << "contentFileBeforeWRiteINFILE=" << contentFile << endl;
+	cout << "sumPriceArticle=" << sumPriceArticle << endl;
+
+	cout << endl;
+}
 
 void updateTurnoverInFile(char* todayDate, float sumPriceArticle) {
 	ifstream in(TURNOVER_PER_DAY_FILE);
@@ -741,50 +779,9 @@ void updateTurnoverInFile(char* todayDate, float sumPriceArticle) {
 	cout << "contentFile=" << textLength(contentFile) << endl;
 	cout << "contentFile=" << contentFile << endl;
 	if (isExistTodayDate) {
-
-
-		int indexLastLine = getIndexLastLineForTurnover(contentFile, counterNewLine);
-		cout << "indexLastLine=" << indexLastLine << endl;
-		cout << "contentFile[indexLastLine]=" << contentFile[indexLastLine] << endl;
-		// Прескачам дължината на датата, която е фиксирана и директно почвам да заменям стойността на предишния оборот
-		indexLastLine = indexLastLine + DATE_LENGTH + 1;
-		cout << "indexContentFile=" << indexLastLine << endl;
-		cout << "AFTERDATELENGTH contentFile[" << indexLastLine << "]=" << contentFile[indexLastLine] << endl;
-		int index = 0;
-		int dayOfDate = 0;
-		char sumPrice[MAX_SIZE_CHAR_ARRAY];
-		
-		index = indexLastLine;
-		int wholePartNumber = 0;
-		float fractionalNumberPart = 0;
-		float turnoverForToday = 0;
-		while (contentFile[index] != '\0') {
-			while (contentFile[index] >= '0' && contentFile[index] <= '9') {
-				wholePartNumber = wholePartNumber * 10 + (contentFile[index] - '0');
-				index++;
-			}
-			if (contentFile[index] == '.') {
-				index++;
-				while (contentFile[index] >= '0' && contentFile[index] <= '9') {
-					fractionalNumberPart = fractionalNumberPart * 10 + (contentFile[index] - '0');
-					index++;
-				}
-			}
-			turnoverForToday += wholePartNumber + (fractionalNumberPart / 100);
-			index++;
-		}
-	
-		turnoverForToday += sumPriceArticle;
+		overwriteTodayTurnoverInFile(contentFile, sumPriceArticle, counterNewLine);
 		
 		
-		changeTurnoverForTodayInString(contentFile, turnoverForToday, indexLastLine);
-		cout << "contentFileBeforeWRiteINFILE=" << contentFile<<endl;
-		cout << "sumPriceArticle=" << sumPriceArticle << endl;
-		
-		cout << endl;
-		
-		
-		cout << "contentFile=" << contentFile << endl;
 	}
 	else {
 
