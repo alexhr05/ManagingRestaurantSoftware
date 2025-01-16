@@ -38,6 +38,10 @@ const int MAX_SIZE_CHAR_ARRAY = 1024;
 
 const int DATE_LENGTH = 10;
 
+struct Order {
+	char articlesFromOrder[MAX_SIZE_CHAR_ARRAY];
+};
+
 enum workersType {
 	WAITER = 'w',
 	MANAGER = 'm'
@@ -218,7 +222,6 @@ void findNameOfArticleInMenu(char* line) {
 	cout << endl;
 
 }
-
 
 int searchPriceInMenu(int numberOrder) {
 	ifstream in(MENU_FILE);
@@ -589,7 +592,7 @@ int getIndexLastLineForTurnover(char* contentFile, int counterNewLine) {
 }
 
 // Копира първоначлния масив от чарове и го прехъврля в другия масив
-void strCopy(char* dest, const char* src) {
+void strCopy(char* dest, char* src) {
 	int index = 0;
 	while (src[index] != '\0') {
 		dest[index] = src[index];
@@ -714,8 +717,6 @@ void overwriteTodayTurnoverInFile(char* contentFile, int sumPriceArticle, int co
 	}
 	turnoverForToday += number;
 	turnoverForToday += sumPriceArticle;
-	cout << "sumPriceArticle=" << sumPriceArticle << endl;
-	cout << "isExistTodayDate=" << isExistTodayDate << endl;
 	if (isExistTodayDate) {
 		changeTurnoverForTodayInString(contentFile, turnoverForToday, indexLastLine);
 	}
@@ -781,6 +782,145 @@ void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 }
 
 
+
+
+char* searchArticleNameInMenu(int numberOrder) {
+	ifstream in(MENU_FILE);
+	if (!in.is_open()) {
+		cout << "Error";
+
+	}
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int index = 0;
+	char articleName[MAX_SIZE_CHAR_ARRAY];
+	int indexArticleName = 0;
+	while (in.getline(line, BUFFER_SIZE)) {
+		int i = 0;
+		int articleId = 0;
+
+		while (line[i] >= '0' && line[i] <= '9') {
+			articleId = articleId * 10 + (line[i] - '0');
+			i++;
+		}
+		if (articleId == numberOrder) {
+			// Това е за да може да започне директно да чете от името на артикула във файла, заради синтаксиса на файла
+			int j = i + 1;
+			while (line[j] != ';') {
+				articleName[indexArticleName] = line[j];
+				indexArticleName++;
+				i++;
+				j++;
+			}
+
+		}
+
+		index = 0;
+	}
+	in.close();
+	return articleName;
+
+}
+
+void addNewArticleNameToOrder(Order order, char* articleName) {
+	int index = 0;
+	while (articleName[index] != '\0') {
+		order.articlesFromOrder[index] = articleName[index];
+		index++;
+	}
+	order.articlesFromOrder[index] = '\0';
+}
+
+int compareTwoOrders(char* order1, char* order2) {
+	int index = 0;
+	while (order1[index] != '\0' && order2[index] != '\0') {
+		if (order1[index] < order2[index]) {
+			return -1; // order1 e преди order2
+		}
+		else if (order1[index] > order2[index]) {
+			return 1; // order1 е след order2
+		}
+		index++;
+	}
+
+	return 0;
+}
+
+void strCopy(char* destination, const char* original) {
+	int i = 0;
+	while (original[i] != '\0') {
+		destination[i] = original[i];
+		i++;
+	}
+	destination[i] = '\0';
+}
+
+void swapOrders(char* order1, char* order2) {
+	char temp[MAX_SIZE_CHAR_ARRAY]; 
+	strCopy(temp, order1);
+	strCopy(order1, order2);
+	strCopy(order2, temp);
+}
+
+void sortOrdersAlphabetical(Order orders[], int countOrders) {
+	int sizeOrders = 0;
+	/*bool isThereDifferenceInOrder = true;*/
+	for (int i = 0; i < countOrders-1; i++) {
+		sizeOrders = textLength(orders[i].articlesFromOrder);
+		int indexArticlesFromOrder = 0;
+		if (compareTwoOrders(orders[i].articlesFromOrder, orders[i + 1].articlesFromOrder) == 1 || compareTwoOrders(orders[i].articlesFromOrder, orders[i + 1].articlesFromOrder) == 0) {
+			swapOrders(orders[i].articlesFromOrder, orders[i + 1].articlesFromOrder);
+		}
+		else if(compareTwoOrders(orders[i].articlesFromOrder, orders[i + 1].articlesFromOrder) == -1){
+
+		}	
+	}
+	cout << "after swap" << endl;
+	for (int i = 0; i < countOrders; i++) {
+		cout << "order[" << i << "]="<< orders[i].articlesFromOrder<<endl;
+	}
+
+}
+
+void getNamesOfArticleAndSortOrders() {
+	ifstream in(ORDER_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+		return;
+	}
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int numberOrder = 0;
+	char* articleName;
+	Order orders[MAX_SIZE_CHAR_ARRAY];
+	int countOrders = 0;
+
+	while (in.getline(line,MAX_SIZE_CHAR_ARRAY)){
+		// +1 е, за да пропусне символа точкаи запетая и да почне да чете директно от поръчка номерата на артикулите
+		for (int j = DATE_LENGTH + 1; j <= textLength(line); j++) {
+			while (line[j] >= '0' && line[j] <= '9') {
+				numberOrder = numberOrder * 10 + (line[j] - '0');
+				j++;
+			}
+
+			if (line[j] == ';') {
+				articleName = searchArticleNameInMenu(numberOrder);
+				addNewArticleNameToOrder(orders[countOrders], articleName);
+				/*cout << "orders[indexOrders]=" << orders[indexOrders] << endl;
+				cout << "orders[indexOrders]=" << orders[indexOrders] << endl;*/
+				countOrders++;
+				numberOrder = 0;
+			}
+		}
+		
+	}
+	cout << "BEFORE swap" << endl;
+	for (int i = 0; i < countOrders; i++) {
+		cout << "order[" << i << "]=" << orders[i].articlesFromOrder << endl;
+	}
+	sortOrdersAlphabetical(orders, countOrders);
+	
+	in.close();
+}
 
 void makeOrder() {
 	int articleId;
@@ -914,7 +1054,7 @@ int main()
 				showDetailedOrder();
 			}
 			else if (action == 5) {
-
+				getNamesOfArticleAndSortOrders();
 			}
 			else if (action == 6) {
 				showTurnoverForToday();
@@ -923,9 +1063,56 @@ int main()
 
 	}
 	else if (typeOfWorker == 'm') {
+		cout << endl;
 		cout << MANAGER_MENU_OPTIONS << endl;
-		cout << "Enter product:";
-		cin.getline(product, MAX_SIZE_CHAR_ARRAY);
+		cout << endl;
+
+		do {
+
+			cout << "What you want to choose from above:";
+			cin >> action;
+
+			if (action == 1) {
+				readFromMenuFile();
+			}
+			else if (action == 2) {
+				makeOrder();
+			}
+			else if (action == 3) {
+				orderCancellation();
+			}
+			else if (action == 4) {
+				showDetailedOrder();
+			}
+			else if (action == 5) {
+
+			}
+			else if (action == 6) {
+				
+			}
+			else if (action == 7) {
+				
+			}
+			else if (action == 8) {
+				
+			}
+			else if (action == 9) {
+				
+			}
+			else if (action == 10) {
+				
+			}
+			else if (action == 11) {
+				
+			}
+			else if (action == 12) {
+				
+			}
+			else if (action == 13) {
+				
+			}
+		} while (action >= 1 || action <= 6);
+
 
 		cout << endl;
 
