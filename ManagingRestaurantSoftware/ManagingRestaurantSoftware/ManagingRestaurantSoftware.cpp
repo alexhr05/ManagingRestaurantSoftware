@@ -1367,14 +1367,7 @@ void addNumbersCorrectlyToCharArray(char* destination, int number) {
 }
 
 void addNewProductToWarehouse() {
-	ifstream in(WAREHOUSE_FILE);
-
-	if (!in.is_open()) {
-		cout << "Error";
-	}
-
 	char contentFile[MAX_SIZE_CHAR_ARRAY];
-
 	char newLineInWarehouse[MAX_SIZE_CHAR_ARRAY];
 	char product[MAX_SIZE_CHAR_ARRAY];
 	int grams;
@@ -1401,8 +1394,49 @@ void addNewProductToWarehouse() {
 	sizeNewLineInWarehouse = textLength(newLineInWarehouse);
 	newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
 
-	in.close();
 	AppendInWarehouseFile(newLineInWarehouse);
+}
+
+void removeProductFromWarehouse() {
+	ifstream in(WAREHOUSE_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+
+	char line[MAX_SIZE_CHAR_ARRAY];
+	char orderFileContent[MAX_SIZE_CHAR_ARRAY];
+	int countRow = 0;
+	int index = 0;
+	while (in.getline(line, MAX_SIZE_CHAR_ARRAY)) {
+		for (int i = 0; i < textLength(line); i++) {
+			orderFileContent[index++] = line[i];
+		}
+		orderFileContent[index++] = '\n';
+		countRow++;
+	}
+	orderFileContent[index] = '\0';
+
+	int countToLastArticle = 0;
+	int indexWithoutLastOrders = 0;
+	char withoutLastArticle[MAX_SIZE_CHAR_ARRAY];
+
+	while (countToLastArticle < (countRow - 1)) {
+
+		if (orderFileContent[indexWithoutLastOrders] == '\n') {
+			countToLastArticle++;
+			withoutLastArticle[indexWithoutLastOrders] = orderFileContent[indexWithoutLastOrders];
+		}
+		withoutLastArticle[indexWithoutLastOrders] = orderFileContent[indexWithoutLastOrders];
+		indexWithoutLastOrders++;
+	}
+
+	withoutLastArticle[indexWithoutLastOrders - 1] = '\0';
+	writeInWarehouseFile(withoutLastArticle);
+
+	cout << "Remove product succesfully!" << endl;
+
+	in.close();
 }
 
 void entryTitles() {
@@ -1495,7 +1529,7 @@ int main()
 				seeWhatLeftsInWarehouse();
 			}
 			else if (action == 7) {
-
+				removeProductFromWarehouse();
 			}
 			else if (action == 8) {
 				addNewProductToWarehouse();
