@@ -425,6 +425,15 @@ void writeInOrderFile(char* text) {
 
 }
 
+void writeInOrderMenu(char* text) {
+	ofstream file(MENU_FILE);
+
+	file << text;
+
+	file.close();
+
+}
+
 void writeInTurnoverPerDayFile(char* updatedTurnover) {
 	ofstream file(TURNOVER_PER_DAY_FILE);
 
@@ -541,29 +550,34 @@ char* getTodayDate() {
 	const int numberMonths = 12;
 	int index = 0;
 	int month = getMonthOfDayFile();
+	int zero = 0;
+	int nine = 9;
+	int ten = 10;
+	int twelve = 12;
+	int thirtyOne = 31;
 
-	if (todayDay >= 0 && todayDay <= 9) {
+	if (todayDay >= zero && todayDay <= nine) {
 		units = todayDay + '0';
 		todayDate[index++] = '0';
 		todayDate[index++] = units;
 	}
-	else if (todayDay >= 10 && todayDay <= 31) {
-		units = todayDay % 10 + '0';
-		todayDay /= 10;
-		dozens = todayDay % 10 + '0';
+	else if (todayDay >= ten && todayDay <= thirtyOne) {
+		units = todayDay % ten + '0';
+		todayDay /= ten;
+		dozens = todayDay % ten + '0';
 		todayDate[index++] = dozens;
 		todayDate[index++] = units;
 	}
 	todayDate[index++] = '/';
-	if (month >= 0 && month <= 9) {
+	if (month >= zero && month <= nine) {
 		units = month + '0';
 		todayDate[index++] = '0';
 		todayDate[index++] = units;
 	}
-	else if (month >= 10 && month <= 12) {
-		units = month % 10 + '0';
-		month /= 10;
-		dozens = month % 10 + '0';
+	else if (month >= ten && month <= twelve) {
+		units = month % ten + '0';
+		month /= ten;
+		dozens = month % ten + '0';
 		todayDate[index++] = dozens;
 		todayDate[index++] = units;
 	}
@@ -936,14 +950,14 @@ int getSizeOfArticleIdInOrderArray(int articleIdInOrder[]) {
 		index++;
 	}
 	for (int i = 0; i < index; i++) {
-		cout << articleIdInOrder[index]<<endl;
+		cout << articleIdInOrder[index] << endl;
 	}
 
 	return index;
 }
 
 int getSizeOfArticlesInOrder(int articleIdInOrder[]) {
-	
+
 	char line[MAX_SIZE_CHAR_ARRAY];
 	int articleId = 0;
 	int indexLine = 0;
@@ -984,7 +998,7 @@ int getSizeOfArticlesInOrder(int articleIdInOrder[]) {
 char* getArticlesName(int articleIdInOrder[], int& countArticleOrder) {
 
 	char line[MAX_SIZE_CHAR_ARRAY];
-	char* allArticlesInOrder = new char[getSizeOfArticlesInOrder(articleIdInOrder)+1];
+	char* allArticlesInOrder = new char[getSizeOfArticlesInOrder(articleIdInOrder) + 1];
 	int articleId = 0;
 	int indexLine = 0;
 	int sizeArticleIdInOrder = getSizeOfArticleIdInOrderArray(articleIdInOrder);
@@ -1000,7 +1014,7 @@ char* getArticlesName(int articleIdInOrder[], int& countArticleOrder) {
 		while (in.getline(line, MAX_SIZE_CHAR_ARRAY)) {
 			indexLine = 0;
 			articleId = 0;
-			
+
 			while (line[indexLine] >= '0' && line[indexLine] <= '9') {
 				articleId = articleId * 10 + (line[indexLine] - '0');
 				indexLine++;
@@ -1017,11 +1031,11 @@ char* getArticlesName(int articleIdInOrder[], int& countArticleOrder) {
 				countArticleOrder += 1;
 				break;
 			}
-		}		
+		}
 		in.close();
 	}
 	allArticlesInOrder[index] = '\0';
-	
+
 	return allArticlesInOrder;
 }
 
@@ -1040,10 +1054,10 @@ void getNamesOfArticleAndSortOrders() {
 	int countOrders = getCounterOfOrders();
 	Order* orders = new Order[countOrders];
 	char* articlesName;
-	
+
 	while (in.getline(line, MAX_SIZE_CHAR_ARRAY)) {
 		index = 0;
-		
+
 		for (int j = DATE_LENGTH + 1; j <= textLength(line); j++) {
 			while (line[j] >= '0' && line[j] <= '9') {
 				articleIdInOrders[index] = articleIdInOrders[index] * 10 + (line[j] - '0');
@@ -1055,13 +1069,13 @@ void getNamesOfArticleAndSortOrders() {
 		articlesName = getArticlesName(articleIdInOrders, orders[indexCurrentOrder].countArticleForOrder);
 
 		strCopy(orders[indexCurrentOrder].articlesFromOrder, articlesName);
-		
+
 		delete[] articlesName;
 
 		for (int i = 0; i < index;i++) {
 			articleIdInOrders[i] = 0;
 		}
-		
+
 		indexCurrentOrder++;
 	}
 
@@ -1071,9 +1085,9 @@ void getNamesOfArticleAndSortOrders() {
 	cout << endl;
 	for (int i = 0; i < countOrders;i++) {
 		cout << orders[i].articlesFromOrder << endl;
-		cout << "Number of articles in Order:" << orders[i].countArticleForOrder<<endl;
+		cout << "Number of articles in Order:" << orders[i].countArticleForOrder << endl;
 		cout << endl;
-		
+
 	}
 }
 
@@ -1153,7 +1167,7 @@ void makeOrder() {
 }
 
 int findLastIdOfExistingArticleInMenu() {
-	ifstream in(ORDER_FILE);
+	ifstream in(MENU_FILE);
 
 	if (!in.is_open()) {
 		cout << "Error";
@@ -1170,6 +1184,7 @@ int findLastIdOfExistingArticleInMenu() {
 				articleId = articleId * 10 + (line[index] - '0');
 				index++;
 			}
+
 		}
 		index++;
 	}
@@ -1178,61 +1193,121 @@ int findLastIdOfExistingArticleInMenu() {
 	return articleId;
 }
 
-void addNumberToCharArray(char* original, int number, int index) {
-	int numDigits = (int)log10(number) + 1;
-	for (int i = numDigits - 1; i >= 0; i--)
-	{
-		int digit = number % 10;
-		original[index + i] = digit + '0';
+
+
+void addNumberToCharArray(char* original, int number, int& index) {
+	cout << endl;
+	cout << endl;
+	int counter = 0;
+	int reversedNumber = 0;
+	char numberInChar[MAX_SIZE_CHAR_ARRAY];
+	int temp;
+	int indexTemp = 0;
+	while (number != 0) {
+		temp = number % 10;
+		numberInChar[indexTemp] = temp + '0';
 		number /= 10;
+		indexTemp++;
 	}
-	index += numDigits;
-	original[index - 1] = ';';
-	original[index++] = '\n';
+
+	numberInChar[indexTemp] = '\0';
+	reverseArray(numberInChar, textLength(numberInChar));
+
+	int sizeNumberInChar = textLength(numberInChar);
+	int sizeOriginal = textLength(original);
+	for (int i = 0; i < sizeNumberInChar; i++)
+	{
+		original[index + i] = numberInChar[i];
+
+	}
+	index += sizeNumberInChar;
+	original[index++] = ';';
+
 	original[index] = '\0';
 }
 
-void addNewArticleNameToOrder(char* order, char* articleName) {
-	int index = 0;
-	int sizeOrder = textLength(order);
+void addNewArticleNameToOrder(char* order, char* articleName, int& index) {
+	int indexArticleName = 0;
 	cout << "After articleName=" << articleName << endl;
-	while (articleName[index] != '\0') {
-		order[sizeOrder + index] = articleName[index];
+	cout << "Order=" << order<< endl;
+	while (articleName[indexArticleName] != '\0') {
+		order[index] = articleName[indexArticleName];
+		cout << "articleName["<< indexArticleName<<"]=" << articleName[indexArticleName] << endl;
+		cout << "order["<<index<<"]=" << order[index] << endl;
 		index++;
+		indexArticleName++;
 	}
-	order[sizeOrder++] = ';';
-	order[sizeOrder] = '\0';
+	order[index++] = ';';
+	order[index] = '\0';
 }
 
 void addNewArticleToMenu() {
 	char aritcleName[MAX_SIZE_CHAR_ARRAY];
 	float articlePrice;
-	int newArticleId = findLastIdOfExistingArticleInMenu()+1;
+	int articlePriceCastToInt = 0;
+	int newArticleId = findLastIdOfExistingArticleInMenu() + 1;
 	char newLineInMenu[MAX_SIZE_CHAR_ARRAY];
 	int index = 0;
 	char charVersionNewArticleId = 0;
 
 	cout << "Enter the name of new article:";
 	cin.getline(aritcleName, MAX_SIZE_CHAR_ARRAY);
-	cin.ignore();
+	
 	cout << "Enter the price of article:";
 	cin >> articlePrice;
+	articlePriceCastToInt = articlePrice * 100;
 
+	newLineInMenu[index++] = '\n';
 	addNumberToCharArray(newLineInMenu, newArticleId, index);
-
-	addNewArticleNameToOrder(newLineInMenu, aritcleName);
+	
+	addNewArticleNameToOrder(newLineInMenu, aritcleName, index);
 	index = textLength(newLineInMenu);
 
+	addNumberToCharArray(newLineInMenu, articlePriceCastToInt, index);
 
-	addNumberToCharArray(newLineInMenu, articlePrice, index);
+	appendInMenuFile(newLineInMenu);
+}
 
-	cout << "newLineInMenu=" << newLineInMenu;
+void removeArticleFromMenu() {
+	ifstream in(MENU_FILE);
 
+	if (!in.is_open()) {
+		cout << "Error";
+	}
 
-	/*appendInMenuFile();*/
+	char line[MAX_SIZE_CHAR_ARRAY];
+	char orderFileContent[MAX_SIZE_CHAR_ARRAY];
+	int countRow = 0;
+	int index = 0;
+	while (in.getline(line, MAX_SIZE_CHAR_ARRAY)) {
+		for (int i = 0; i < textLength(line); i++) {
+			orderFileContent[index++] = line[i];
+		}
+		orderFileContent[index++] = '\n';
+		countRow++;
+	}
+	orderFileContent[index] = '\0';
 
+	int countToLastArticle = 0;
+	int indexWithoutLastOrders = 0;
+	char withoutLastArticle[MAX_SIZE_CHAR_ARRAY];
 
+	while (countToLastArticle < (countRow - 1)) {
 
+		if (orderFileContent[indexWithoutLastOrders] == '\n') {
+			countToLastArticle++;
+			withoutLastArticle[indexWithoutLastOrders] = orderFileContent[indexWithoutLastOrders];
+		}
+		withoutLastArticle[indexWithoutLastOrders] = orderFileContent[indexWithoutLastOrders];
+		indexWithoutLastOrders++;
+	}
+
+	withoutLastArticle[indexWithoutLastOrders-1]= '\0';
+	writeInOrderMenu(withoutLastArticle);
+
+	cout << "Remove article succesfully!" << endl;
+	
+	in.close();
 }
 
 
@@ -1306,7 +1381,7 @@ int main()
 
 			cout << "What you want to choose from above:";
 			cin >> action;
-
+			cin.ignore();
 			if (action == 1) {
 				readFromMenuFile();
 			}
@@ -1344,7 +1419,7 @@ int main()
 				addNewArticleToMenu();
 			}
 			else if (action == 13) {
-
+				removeArticleFromMenu();
 			}
 		} while (action >= 1 || action <= 6);
 
