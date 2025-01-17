@@ -1,5 +1,6 @@
 1;Salad Shopska;330
 2;Salad Ceaser;530
-3;Soup Topcheta;250
+3;Riba ton;530
+4;Soup Topcheta;250
 13;Schnitzel;1250
 14;kaka;1445
