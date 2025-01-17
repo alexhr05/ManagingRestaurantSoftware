@@ -389,8 +389,17 @@ void showTurnoverForToday() {
 	in.close();
 }
 
+void AppendInWarehouseFile(char* text) {
+	ofstream file(WAREHOUSE_FILE, ios::app);
+
+	file << text;
+
+	file.close();
+
+}
+
 void writeInWarehouseFile(char* text) {
-	ofstream file(ORDER_FILE, ios::app);
+	ofstream file(WAREHOUSE_FILE);
 
 	file << text;
 
@@ -1229,11 +1238,11 @@ void addNumberToCharArray(char* original, int number, int& index) {
 void addNewArticleNameToOrder(char* order, char* articleName, int& index) {
 	int indexArticleName = 0;
 	cout << "After articleName=" << articleName << endl;
-	cout << "Order=" << order<< endl;
+	cout << "Order=" << order << endl;
 	while (articleName[indexArticleName] != '\0') {
 		order[index] = articleName[indexArticleName];
-		cout << "articleName["<< indexArticleName<<"]=" << articleName[indexArticleName] << endl;
-		cout << "order["<<index<<"]=" << order[index] << endl;
+		cout << "articleName[" << indexArticleName << "]=" << articleName[indexArticleName] << endl;
+		cout << "order[" << index << "]=" << order[index] << endl;
 		index++;
 		indexArticleName++;
 	}
@@ -1252,14 +1261,14 @@ void addNewArticleToMenu() {
 
 	cout << "Enter the name of new article:";
 	cin.getline(aritcleName, MAX_SIZE_CHAR_ARRAY);
-	
+
 	cout << "Enter the price of article:";
 	cin >> articlePrice;
 	articlePriceCastToInt = articlePrice * 100;
 
 	newLineInMenu[index++] = '\n';
 	addNumberToCharArray(newLineInMenu, newArticleId, index);
-	
+
 	addNewArticleNameToOrder(newLineInMenu, aritcleName, index);
 	index = textLength(newLineInMenu);
 
@@ -1302,14 +1311,99 @@ void removeArticleFromMenu() {
 		indexWithoutLastOrders++;
 	}
 
-	withoutLastArticle[indexWithoutLastOrders-1]= '\0';
+	withoutLastArticle[indexWithoutLastOrders - 1] = '\0';
 	writeInOrderMenu(withoutLastArticle);
 
 	cout << "Remove article succesfully!" << endl;
-	
+
 	in.close();
 }
 
+void seeWhatLeftsInWarehouse() {
+	ifstream in(WAREHOUSE_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+
+	char contentFile[MAX_SIZE_CHAR_ARRAY];
+
+	in.getline(contentFile, MAX_SIZE_CHAR_ARRAY, '\0');
+
+	cout << "Product name | Left in grams" << endl;
+	cout << contentFile;
+
+	in.close();
+}
+
+void addNewElementsToCharArray(char* destination, char* source) {
+	int index = 0;
+	int sizeDestination = textLength(destination);
+	cout << endl;
+	cout << endl;
+	cout << "sizeDestination=" << sizeDestination << endl;
+	while (source[index] != '\0') {
+		destination[sizeDestination] = source[index];
+		cout << "source["<<index<<"]=" << source[index] << endl;
+		cout << "destination["<<sizeDestination<<"]=" << destination[sizeDestination] << endl;
+		sizeDestination++;
+		index++;
+	}
+	destination[sizeDestination] = '\0';
+	cout << "destination=" << destination << endl;
+}
+
+void addNumbersCorrectlyToCharArray(char* destination, int number) {
+	int temp;
+	int index = 0;
+	while (number != 0) {
+		temp = number % 10;
+		destination[index] = temp + '0';
+		number /= 10;
+		index++;
+	}
+	destination[index] = '\0';
+	reverseArray(destination, textLength(destination));
+}
+
+void addNewProductToWarehouse() {
+	ifstream in(WAREHOUSE_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+
+	char contentFile[MAX_SIZE_CHAR_ARRAY];
+
+	char newLineInWarehouse[MAX_SIZE_CHAR_ARRAY];
+	char product[MAX_SIZE_CHAR_ARRAY];
+	int grams;
+	int index = 0;
+	int sizeNewLineInWarehouse = 0;
+	char gramsInCharArray[MAX_SIZE_CHAR_ARRAY];
+	cout << "Enter name of new product:";
+	cin >> product;
+
+	cout << "Enter quantity of this product (in grams):";
+	cin >> grams;
+	newLineInWarehouse[index++] = '\n';
+	newLineInWarehouse[index] = '\0';
+	addNewElementsToCharArray(newLineInWarehouse, product);
+	sizeNewLineInWarehouse = textLength(newLineInWarehouse);
+
+	newLineInWarehouse[sizeNewLineInWarehouse++] = ';';
+	newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
+
+	addNumbersCorrectlyToCharArray(gramsInCharArray, grams);
+
+	addNewElementsToCharArray(newLineInWarehouse, gramsInCharArray);
+
+	sizeNewLineInWarehouse = textLength(newLineInWarehouse);
+	newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
+
+	in.close();
+	AppendInWarehouseFile(newLineInWarehouse);
+}
 
 void entryTitles() {
 	cout << endl;
@@ -1398,13 +1492,13 @@ int main()
 
 			}
 			else if (action == 6) {
-
+				seeWhatLeftsInWarehouse();
 			}
 			else if (action == 7) {
 
 			}
 			else if (action == 8) {
-
+				addNewProductToWarehouse();
 			}
 			else if (action == 9) {
 
@@ -1413,6 +1507,7 @@ int main()
 
 			}
 			else if (action == 11) {
+
 
 			}
 			else if (action == 12) {
