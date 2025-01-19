@@ -38,6 +38,8 @@ const int MAX_SIZE_CHAR_ARRAY = 900;
 
 const int DATE_LENGTH = 10;
 
+const int digitsInDate = 3;
+
 struct Order {
 	char articlesFromOrder[MAX_SIZE_CHAR_ARRAY];
 	int countArticleForOrder = 0;
@@ -258,11 +260,6 @@ int searchPriceInMenu(int numberOrder) {
 
 			sumOfPrice += number;
 
-			/*cout << "sumOfPrice=" << sumOfPrice << endl;
-			cout << "wholeNumberPart=" << wholeNumberPart << endl;
-			cout << "line[i] and line[i+1]=" << line[i];*/
-			/*cout << line[i+1] << endl;*/
-
 		}
 
 		index = 0;
@@ -294,38 +291,6 @@ int findPriceOfArticle(char* line) {
 	return turnoverFromOrder;
 
 }
-
-//void showTurnoverFromToday() {
-//	ifstream in(ORDER_FILE);
-//
-//	if (!in.is_open()) {
-//		cout << "Error";
-//	}
-//
-//	char line[MAX_SIZE_CHAR_ARRAY];
-//	int index = 0;
-//	int counter = 1;
-//	int todayDay = readFromTodayDateFile();
-//	int dayFromDate = 0;
-//	float finalTurnOverForToday = 0;
-//
-//	while (in.getline(line, BUFFER_SIZE)) {
-//		dayFromDate = 0;
-//		index = 0;
-//		while (line[index] >= '0' && line[index] <= '9') {
-//			dayFromDate = dayFromDate * 10 + (line[index] - '0');
-//			cout << line[index] << endl;
-//			index++;
-//		}
-//		if (dayFromDate == todayDay) {
-//			finalTurnOverForToday += findPriceOfArticle(line);
-//		}
-//	}
-//		cout << "TurnOver for Today(" << todayDay << "): " << finalTurnOverForToday << endl;
-//	in.close();
-//
-//}
-
 
 
 
@@ -403,6 +368,15 @@ void writeInWarehouseFile(char* text) {
 
 	file << text;
 
+	file.close();
+
+}
+
+void writeIntodayDateFile(char* text) {
+	ofstream file(TODAY_DATE_FILE);
+
+	file << text;
+	cout << "Minava uspeshno" << endl;
 	file.close();
 
 }
@@ -1108,6 +1082,7 @@ void makeOrder() {
 	char completеОrder[MAX_SIZE_CHAR_ARRAY];
 	char* todayDate = getTodayDate();
 	int sumPriceArticle = 0;
+	int indexForOrder = 0;
 
 	do {
 		cout << endl;
@@ -1135,13 +1110,13 @@ void makeOrder() {
 	if (isExistArticleInMenu == false) {
 		countArticleInOrders = 0;
 	}
-
+	completеОrder[indexForOrder++] = '\n';
 	for (int i = 0; i < DATE_LENGTH; i++) {
-		completеОrder[i] = todayDate[i];
-		cout << completеОrder[i];
+		completеОrder[indexForOrder++] = todayDate[i];
+		cout << completеОrder[indexForOrder];
 	}
 	cout << endl;
-	int indexForOrder = DATE_LENGTH;
+
 
 	completеОrder[indexForOrder++] = ';';
 	for (int j = 0; j < countArticleInOrders; j++) {
@@ -1166,12 +1141,11 @@ void makeOrder() {
 
 	}
 	cout << endl;
-	completеОrder[indexForOrder++] = '\n';
 	completеОrder[indexForOrder] = '\0';
 
-
+	
+	writeInOrderFileAppend(completеОrder);
 	updateTurnoverInFile(todayDate, sumPriceArticle);
-
 
 }
 
@@ -1439,6 +1413,29 @@ void removeProductFromWarehouse() {
 	in.close();
 }
 
+
+void incrementDate() {
+	//За да увеличи датата с единица
+	int incrementedDate = readFromTodayDateFile() + 1;
+	// За да се включи и терминиращата нула
+	char newDate[digitsInDate+1];
+	int index = 0;
+	int digit = 0;
+
+	while (incrementedDate) {
+		digit = incrementedDate % 10;
+		newDate[index] = digit + '0';
+		index++;
+		incrementedDate /= 10;
+	}
+	newDate[index] = '\0';
+
+	reverseArray(newDate, textLength(newDate));
+
+	writeIntodayDateFile(newDate);
+
+}
+
 void entryTitles() {
 	cout << endl;
 
@@ -1456,6 +1453,7 @@ int main()
 	int action;
 	char ordersFromFile[MAX_SIZE_CHAR_ARRAY];
 
+	incrementDate();
 
 	entryTitles();
 	cout << "Enter your type of hierarchy:";
