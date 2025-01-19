@@ -28,6 +28,8 @@ const char TODAY_DATE_FILE[] = "todayDate.txt";
 
 const char TURNOVER_PER_DAY_FILE[] = "turnoverPerDay.txt";
 
+const char RECIPES_FILE[] = "recipes.txt";
+
 const char WAITER_MENU_OPTIONS[] = "1. Overview of the menu\n2. Make Order\n3. Order cancellation\n4. View past orders\n5. View past orders in alphabetical order as well as the number of orders of each item\n6. View the profits for the day";
 
 const char MANAGER_MENU_OPTIONS[] = "1. Overview of the menu\n2. Make order\n3. Order cancellation\n4. View past orders in alphabetical order as well as the number of orders of each item\n5. View past orders\n6. Overview of what is left and of what\n7. Remove a product from warehouse\n8. Add a new product to the warehouse\n9. View the profits for the day\n10. Taking a report for the day\n11. Subtract all turnovers from a given date to now\n12. Adding a new product to the menu\n13. Remove a product from the menu";
@@ -976,7 +978,6 @@ int getSizeOfArticlesInOrder(int articleIdInOrder[]) {
 }
 
 char* getArticlesName(int articleIdInOrder[], int& countArticleOrder) {
-
 	char line[MAX_SIZE_CHAR_ARRAY];
 	char* allArticlesInOrder = new char[getSizeOfArticlesInOrder(articleIdInOrder) + 1];
 	int articleId = 0;
@@ -1071,7 +1072,163 @@ void getNamesOfArticleAndSortOrders() {
 	}
 }
 
+int getCountDigitsCurrentQuantityProduct(int currentQuantityProduct) {
+	int counter = 0;
+	while (currentQuantityProduct != 0) {
+		currentQuantityProduct /= 10;
+		counter++;
+	}
 
+	return counter++;
+}
+
+char* turningNumberInCharArray(int currentQuantityProduct) {
+	int index = 0;
+	int digit = 0;
+	char* source = new char[getCountDigitsCurrentQuantityProduct(currentQuantityProduct) + 1];
+	while (currentQuantityProduct != 0) {
+		digit = currentQuantityProduct % 10;
+		source[index] = digit + '0';
+		currentQuantityProduct /= 10;
+		index++;
+	}
+	source[index] = '\0';
+	reverseArray(source, textLength(source));
+
+	return source;
+}
+
+void rewriteNewValueOfQuantity(char* contentFile, char* newQuantityInCharArray, char* oldQuantityInCharArray, int index) {
+	cout << endl;
+	cout << endl;
+	index -= textLength(oldQuantityInCharArray);
+	int indexForQuantityArray = 0;
+
+	if (textLength(oldQuantityInCharArray) > textLength(newQuantityInCharArray)) {
+		contentFile[index++] = '0';
+	}
+	while (contentFile[index] != '\n' && contentFile[index] != '\0') {
+		contentFile[index] = newQuantityInCharArray[indexForQuantityArray];
+		indexForQuantityArray++;
+		index++;
+		
+	}
+	writeInWarehouseFile(contentFile);
+
+}
+
+void updateLeftProductInWaehouseFile(int productId, int quantityProduct) {
+	ifstream in(WAREHOUSE_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+		return;
+	}
+
+	char contentFile[MAX_SIZE_CHAR_ARRAY];
+	char* oldQuantityInCharArray;
+	char* newQuantityInCharArray;
+	int index = 0;
+	int currentIdProduct = 0;
+	int currentQuantityProduct = 0;
+	bool isIndexOnId = true;
+
+	in.getline(contentFile, MAX_SIZE_CHAR_ARRAY, '\0');
+	while (contentFile[index] != '\0') {
+		if (isIndexOnId) {
+			currentIdProduct = 0;
+			while (contentFile[index] >= '0' && contentFile[index] <= '9') {
+				currentIdProduct = currentIdProduct * 10 + contentFile[index] - '0';
+				index++;
+			}
+			isIndexOnId = false;
+		}
+
+		if (currentIdProduct == productId) {
+			//За да прескочи точката и запетая като символ
+			index++;
+			currentQuantityProduct = 0;
+			while (contentFile[index] != ';') {
+				index++;
+				
+			}
+			index++;
+
+			while (contentFile[index] >= '0' && contentFile[index] <= '9') {
+				currentQuantityProduct = currentQuantityProduct * 10 + contentFile[index] - '0';
+				index++;
+			}
+			
+			oldQuantityInCharArray = turningNumberInCharArray(currentQuantityProduct);
+			//Намаляваме количеството на продукта
+			currentQuantityProduct -= quantityProduct;
+			newQuantityInCharArray = turningNumberInCharArray(currentQuantityProduct);
+			rewriteNewValueOfQuantity(contentFile, newQuantityInCharArray, oldQuantityInCharArray, index);
+			delete[] oldQuantityInCharArray;
+			delete[] newQuantityInCharArray;
+		}
+		if (contentFile[index] == '\n') {
+			isIndexOnId = true;
+			
+		}
+		index++;
+		
+	}
+	cout << contentFile << endl;
+	in.close();
+
+	
+}
+
+void readRecipesFileAndUpdateProductQuantity(int orders[], int sizeArticleInOrders) {
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int articleId = 0;
+	int index = 0;
+	int productId = 0;
+	int quantityProduct = 0;
+	for (int i = 0; i < sizeArticleInOrders;i++) {
+		ifstream in(RECIPES_FILE);
+
+		if (!in.is_open()) {
+			cout << "Error";
+			return;
+		}
+		while (in.getline(line, MAX_SIZE_CHAR_ARRAY)) {
+			index = 0;
+			productId = 0;
+			quantityProduct = 0;
+			articleId = 0;
+			while (line[index] >= '0' && line[index] <= '9') {
+				articleId = articleId * 10 + line[index] - '0';
+				index++;
+			}
+			if (articleId == orders[i]) {
+				
+				//Прескача точка и запетая символа във файла
+				index++;
+				while (line[index] != ';') {
+					index++;
+				}
+				index++;
+				//Прескача точка и запетая символа във файла
+				while (line[index] >= '0' && line[index] <= '9') {
+					productId = productId * 10 + line[index] - '0';
+					index++;
+				}
+
+				index++;
+				//Прескача точка и запетая символа във файла
+				while (line[index] >= '0' && line[index] <= '9') {
+					quantityProduct = quantityProduct * 10 + line[index] - '0';
+					index++;
+				}
+
+				updateLeftProductInWaehouseFile(productId, quantityProduct);
+			}
+		}
+		in.close();
+	}
+}
 
 void makeOrder() {
 	int articleId;
@@ -1145,6 +1302,8 @@ void makeOrder() {
 
 	writeInOrderFileAppend(completеОrder);
 	updateTurnoverInFile(todayDate, sumPriceArticle);
+
+	readRecipesFileAndUpdateProductQuantity(orders, countArticleInOrders);
 
 }
 
@@ -1396,8 +1555,8 @@ char* findLastIdOfProductInWarehouse() {
 	cout << "productId=" << productId << endl;
 	index = 0;
 	int digit;
-	while (productId!=0) {
-		digit=productId % 10;
+	while (productId != 0) {
+		digit = productId % 10;
 		lastProductId[index] = digit + '0';
 		productId /= 10;
 		index++;
@@ -1405,7 +1564,7 @@ char* findLastIdOfProductInWarehouse() {
 	lastProductId[index] = '\0';
 
 	reverseArray(lastProductId, textLength(lastProductId));
-	
+
 	in.close();
 	return lastProductId;
 }

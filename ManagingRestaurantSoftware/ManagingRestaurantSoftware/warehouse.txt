@@ -1,11 +1,7 @@
-1;Cucumber;1500
-2;Tomato;2500
-3;Cheese;5000
-4;Paper;1000
-5;Lettuce;1540
-6;Chicken;1500
-7;Beef;1500
-8;Fish;2500
-9;Potato;5000
-10;Yoghurt;5500
-11;Carrots;2500
+1;Cucumber;0700
+2;Tomato;0850
+3;Cheese;2320
+4;Potato;3200
+5;Yoghurt;4500
+6;Pork mince;7000
+7;Eggs;3500
