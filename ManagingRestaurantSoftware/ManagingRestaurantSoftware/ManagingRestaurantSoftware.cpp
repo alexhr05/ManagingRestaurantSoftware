@@ -150,9 +150,6 @@ int readFromTodayDateFile() {
 	return day;
 }
 
-
-
-
 void readFromOrderFile() {
 	ifstream in(ORDER_FILE);
 	char ordersFromFile[MAX_SIZE_CHAR_ARRAY];
@@ -358,7 +355,7 @@ void AppendInWarehouseFile(char* text) {
 	ofstream file(WAREHOUSE_FILE, ios::app);
 
 	file << text;
-
+	cout << "Minava zapis";
 	file.close();
 
 }
@@ -1074,6 +1071,8 @@ void getNamesOfArticleAndSortOrders() {
 	}
 }
 
+
+
 void makeOrder() {
 	int articleId;
 	int countArticleInOrders = 0;
@@ -1143,7 +1142,7 @@ void makeOrder() {
 	cout << endl;
 	completеОrder[indexForOrder] = '\0';
 
-	
+
 	writeInOrderFileAppend(completеОrder);
 	updateTurnoverInFile(todayDate, sumPriceArticle);
 
@@ -1175,8 +1174,6 @@ int findLastIdOfExistingArticleInMenu() {
 	in.close();
 	return articleId;
 }
-
-
 
 void addNumberToCharArray(char* original, int number, int& index) {
 	cout << endl;
@@ -1318,8 +1315,8 @@ void addNewElementsToCharArray(char* destination, char* source) {
 	cout << "sizeDestination=" << sizeDestination << endl;
 	while (source[index] != '\0') {
 		destination[sizeDestination] = source[index];
-		cout << "source["<<index<<"]=" << source[index] << endl;
-		cout << "destination["<<sizeDestination<<"]=" << destination[sizeDestination] << endl;
+		cout << "source[" << index << "]=" << source[index] << endl;
+		cout << "destination[" << sizeDestination << "]=" << destination[sizeDestination] << endl;
 		sizeDestination++;
 		index++;
 	}
@@ -1340,6 +1337,79 @@ void addNumbersCorrectlyToCharArray(char* destination, int number) {
 	reverseArray(destination, textLength(destination));
 }
 
+int findDigitsOfLastIdProductWarehouse() {
+	ifstream in(WAREHOUSE_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int index = 0;
+	int counter = 0;
+	in.getline(line, MAX_SIZE_CHAR_ARRAY, '\0');
+	while (line[index] != '\0') {
+		if (line[index] == '\n') {
+			index++;
+			while (line[index] >= '0' && line[index] <= '9') {
+				counter++;
+				index++;
+			}
+
+		}
+		index++;
+	}
+
+	in.close();
+	return counter;
+}
+
+char* findLastIdOfProductInWarehouse() {
+	ifstream in(WAREHOUSE_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+	char line[MAX_SIZE_CHAR_ARRAY];
+	char* lastProductId = new char[findDigitsOfLastIdProductWarehouse()];
+	int productId = 0;
+	int indexProductId = 0;
+	int index = 0;
+	cout << "findDigitsOfLastIdProductWarehouse()=" << findDigitsOfLastIdProductWarehouse() << endl;
+	in.getline(line, MAX_SIZE_CHAR_ARRAY, '\0');
+
+	while (line[index] != '\0') {
+		if (line[index] == '\n') {
+			productId = 0;
+			index++;
+
+			while (line[index] >= '0' && line[index] <= '9') {
+				productId = productId * 10 + (line[index] - '0');
+				cout << "producId=" << productId << endl;
+				index++;
+			}
+
+		}
+		index++;
+	}
+	//Увеличиаваме стойноста на новото id с +1
+	productId++;
+	cout << "productId=" << productId << endl;
+	index = 0;
+	int digit;
+	while (productId!=0) {
+		digit=productId % 10;
+		lastProductId[index] = digit + '0';
+		productId /= 10;
+		index++;
+	}
+	lastProductId[index] = '\0';
+
+	reverseArray(lastProductId, textLength(lastProductId));
+	
+	in.close();
+	return lastProductId;
+}
+
 void addNewProductToWarehouse() {
 	char contentFile[MAX_SIZE_CHAR_ARRAY];
 	char newLineInWarehouse[MAX_SIZE_CHAR_ARRAY];
@@ -1348,6 +1418,7 @@ void addNewProductToWarehouse() {
 	int index = 0;
 	int sizeNewLineInWarehouse = 0;
 	char gramsInCharArray[MAX_SIZE_CHAR_ARRAY];
+	char* lastIdOfProduct = findLastIdOfProductInWarehouse();
 	cout << "Enter name of new product:";
 	cin >> product;
 
@@ -1355,9 +1426,15 @@ void addNewProductToWarehouse() {
 	cin >> grams;
 	newLineInWarehouse[index++] = '\n';
 	newLineInWarehouse[index] = '\0';
+	//Добавям +1 на id-то за новия продукт и го вкарвам в char масив
+	addNewElementsToCharArray(newLineInWarehouse, lastIdOfProduct);
+	sizeNewLineInWarehouse = textLength(newLineInWarehouse);
+	newLineInWarehouse[sizeNewLineInWarehouse++] = ';';
+	newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
+
+	//Добавям името на продукта в масива
 	addNewElementsToCharArray(newLineInWarehouse, product);
 	sizeNewLineInWarehouse = textLength(newLineInWarehouse);
-
 	newLineInWarehouse[sizeNewLineInWarehouse++] = ';';
 	newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
 
@@ -1369,6 +1446,8 @@ void addNewProductToWarehouse() {
 	newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
 
 	AppendInWarehouseFile(newLineInWarehouse);
+
+	delete[] lastIdOfProduct;
 }
 
 void removeProductFromWarehouse() {
@@ -1418,7 +1497,7 @@ void incrementDate() {
 	//За да увеличи датата с единица
 	int incrementedDate = readFromTodayDateFile() + 1;
 	// За да се включи и терминиращата нула
-	char newDate[digitsInDate+1];
+	char newDate[digitsInDate + 1];
 	int index = 0;
 	int digit = 0;
 
