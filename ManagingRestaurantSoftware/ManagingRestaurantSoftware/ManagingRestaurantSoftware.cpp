@@ -139,16 +139,17 @@ int readFromTodayDateFile() {
 	char line[MAX_SIZE_CHAR_ARRAY];
 	int day = 0;
 	int index = 0;
+
 	//Взима единствения елемент на файла, който е просто ден
 	in.getline(line, BUFFER_SIZE);
-
+	cout << "line=" << line << endl;
 	while (line[index] >= '0' && line[index] <= '9') {
 		day = day * 10 + (line[index] - '0');
 		index++;
+		cout << "day=" << day << endl;
 	}
-	cout << "day=" << day << endl;
 	in.close();
-
+	cout << "day=" << day << endl;
 	return day;
 }
 
@@ -391,7 +392,7 @@ void appendInMenuFile(char* text) {
 
 void writeInOrderFileAppend(char* text) {
 	ofstream file(ORDER_FILE, ios::app);
-
+	
 	file << text;
 
 	file.close();
@@ -509,6 +510,22 @@ bool isExistArticle(int articleId) {
 	return false;
 }
 
+
+int getDayOfDayFile(int todayDay) {
+
+	cout << "TOdayDay GETTODAYDATE=" << todayDay << endl;
+	int index = 0;
+	const int numberMonths = 12;
+	int monthsWithDays[numberMonths] = { 31,28,31,30,31, 30,31,31,30,31,30,31 };
+	int copyOfTodayDay = todayDay;
+	while (todayDay >= 0) {
+		todayDay -= monthsWithDays[index++];
+	}
+	todayDay += monthsWithDays[--index];
+
+	return todayDay;
+}
+
 int getMonthOfDayFile() {
 	int month;
 	const int numberMonths = 12;
@@ -520,36 +537,39 @@ int getMonthOfDayFile() {
 		copyOfTodayDay -= monthsWithDays[index++];
 	}
 	month = index;
+
 	return month;
 }
 
-
 char* getTodayDate() {
 	int todayDay = readFromTodayDateFile();
-	char dozens;
-	char units;
 	char* todayDate = new char[DATE_LENGTH + 1];
 	const int numberMonths = 12;
 	int index = 0;
 	int month = getMonthOfDayFile();
 	int zero = 0;
 	int nine = 9;
+	char units;
+	char dozens;
 	int ten = 10;
 	int twelve = 12;
 	int thirtyOne = 31;
+	int dayFromTodayDate = getDayOfDayFile(todayDay);
 
-	if (todayDay >= zero && todayDay <= nine) {
-		units = todayDay + '0';
+	if (dayFromTodayDate >= zero && dayFromTodayDate <= nine) {
+		units = dayFromTodayDate + '0';
 		todayDate[index++] = '0';
 		todayDate[index++] = units;
 	}
-	else if (todayDay >= ten && todayDay <= thirtyOne) {
-		units = todayDay % ten + '0';
-		todayDay /= ten;
-		dozens = todayDay % ten + '0';
+	else if (dayFromTodayDate >= ten && dayFromTodayDate <= thirtyOne) {
+		units = dayFromTodayDate % ten + '0';
+		dayFromTodayDate /= ten;
+		dozens = dayFromTodayDate % ten + '0';
 		todayDate[index++] = dozens;
 		todayDate[index++] = units;
 	}
+
+
 	todayDate[index++] = '/';
 	if (month >= zero && month <= nine) {
 		units = month + '0';
@@ -724,6 +744,9 @@ void overwriteTodayTurnoverInFile(char* contentFile, int sumPriceArticle, int co
 	cout << endl;
 }
 
+
+
+
 void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 	ifstream in(TURNOVER_PER_DAY_FILE);
 
@@ -737,8 +760,12 @@ void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 	int indexLine = 0;
 	char contentFile[MAX_SIZE_CHAR_ARRAY];
 	int todayDay = readFromTodayDateFile();
-
+	int dayOfTodayDate = getDayOfDayFile(todayDay);
+	int monthOfTodayDate = getMonthOfDayFile();
+	cout << "dayOfTodayDate=" << dayOfTodayDate << endl;
+	cout << "monthOfTodayDate=" << monthOfTodayDate << endl;
 	int dayFromFile = 0;
+	int monthFromFile = 0;
 	int index = 0;
 	int counter = 0;
 	int counterNewLine = 0;
@@ -749,18 +776,31 @@ void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 
 	in.getline(contentFile, BUFFER_SIZE, '\0');
 	while (contentFile[indexContentFile] != '\0') {
+		cout << "contentFile[indexContentFile]="<< contentFile[indexContentFile] << endl;
 		if (isIndexOnDateDay) {
 			dayFromFile = 0;
+			monthFromFile = 0;
 			while (contentFile[indexContentFile] >= '0' && contentFile[indexContentFile] <= '9')
 			{
 				dayFromFile = dayFromFile * 10 + (contentFile[indexContentFile] - '0');
 
 				indexContentFile++;
 			}
+			cout << "dayFromFile=" << dayOfTodayDate << endl;
+			
+			indexContentFile += 2;
+			while (contentFile[indexContentFile] >= '0' && contentFile[indexContentFile] <= '9')
+			{
+				cout << "contentFile[indexContentFile]=" << contentFile[indexContentFile] << endl;
+				monthFromFile = monthFromFile * 10 + (contentFile[indexContentFile] - '0');
+
+				indexContentFile++;
+			}
+			cout << "monthFromFile=" << monthFromFile << endl;
 			isIndexOnDateDay = false;
 		}
 
-		if (todayDay == dayFromFile) {
+		if (dayOfTodayDate == dayFromFile && monthOfTodayDate == monthFromFile) {
 			cout << "todayDay=" << todayDay << "; dayFromFile=" << dayFromFile << endl;
 			isExistTodayDate = true;
 		}
@@ -772,7 +812,7 @@ void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 
 		indexContentFile++;
 	}
-
+	cout << "contentFile=" << contentFile << endl;
 	overwriteTodayTurnoverInFile(contentFile, sumPriceArticle, counterNewLine, isExistTodayDate);
 
 	in.close();
@@ -1203,7 +1243,6 @@ void readRecipesFileAndUpdateProductQuantity(int orders[], int sizeArticleInOrde
 				index++;
 			}
 			if (articleId == orders[i]) {
-				
 				//Прескача точка и запетая символа във файла
 				index++;
 				while (line[index] != ';') {
@@ -1237,6 +1276,7 @@ void makeOrder() {
 	bool isExistArticleInMenu;
 	char completеОrder[MAX_SIZE_CHAR_ARRAY];
 	char* todayDate = getTodayDate();
+	cout << "todatDate=" << todayDate<<endl;
 	int sumPriceArticle = 0;
 	int indexForOrder = 0;
 
@@ -1273,7 +1313,6 @@ void makeOrder() {
 	}
 	cout << endl;
 
-
 	completеОrder[indexForOrder++] = ';';
 	for (int j = 0; j < countArticleInOrders; j++) {
 		cout << orders[j] << endl;
@@ -1281,6 +1320,7 @@ void makeOrder() {
 			completеОrder[indexForOrder++] = orders[j] + '0';
 			sumPriceArticle += searchPriceInMenu(orders[j]);
 		}
+
 		else if (orders[j] >= 10)
 		{
 			sumPriceArticle += searchPriceInMenu(orders[j]);
@@ -1299,11 +1339,13 @@ void makeOrder() {
 	cout << endl;
 	completеОrder[indexForOrder] = '\0';
 
-
-	writeInOrderFileAppend(completеОrder);
-	updateTurnoverInFile(todayDate, sumPriceArticle);
-
-	readRecipesFileAndUpdateProductQuantity(orders, countArticleInOrders);
+	if (sumPriceArticle != 0) {
+		writeInOrderFileAppend(completеОrder);
+		updateTurnoverInFile(todayDate, sumPriceArticle);
+		readRecipesFileAndUpdateProductQuantity(orders, countArticleInOrders);
+	}
+	
+	
 
 }
 
