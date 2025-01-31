@@ -30,9 +30,9 @@ const char TURNOVER_PER_DAY_FILE[] = "turnoverPerDay.txt";
 
 const char RECIPES_FILE[] = "recipes.txt";
 
-const char WAITER_MENU_OPTIONS[] = "1. Overview of the menu\n2. Make Order\n3. Order cancellation\n4. View past orders\n5.View past orders in alphabetical order as well as the number of orders of each item\n6.View the profits for the day\n7.See all your options";
+const char WAITER_MENU_OPTIONS[] = "1. Overview of the menu\n\n2. Make Order\n\n3. Order cancellation\n\n4. View past orders\n\n5.View past orders in alphabetical order as well as the number of orders of each item\n\n6.View the profits for the day\n\n7.See all your options";
 
-const char MANAGER_MENU_OPTIONS[] = "1. Overview of the menu\n2. Make order\n3. Order cancellation\n4. View past orders in alphabetical order as well as the number of orders of each item\n5. View past orders\n6. Overview of what is left and of what\n7. Remove a product from warehouse\n8. Add a new product to the warehouse\n9. View the profits for the day\n10. Taking a report for the day\n11. Adding a new product to the menu\n12. Remove a product from the menu\n13.See all your options";
+const char MANAGER_MENU_OPTIONS[] = "1. Overview of the menu\n\n2. Make order\n\n3. Order cancellation\n\n4. View past orders in alphabetical order as well as the number of orders of each item\n\n5. View past orders\n\n6. Overview of what is left and of what\n\n7. Remove a product from warehouse\n\n8. Add a new product to the warehouse\n\n9. View the profits for the day\n\n10. Taking a report for the day\n\n11. Adding a new product to the menu\n\n12. Remove a product from the menu\n\n13.See all your options";
 
 const int BUFFER_SIZE = 1024;
 
@@ -103,9 +103,6 @@ bool searchSubString(char* main, char* sub) {
 	return false;
 
 }
-
-
-
 
 void readFromMenuFile() {
 	ifstream in(MENU_FILE);
@@ -364,7 +361,6 @@ void appendInTurnoverPerDayFile(char* updatedTurnover) {
 
 }
 
-
 // Отменя поръчка, ако не съществува даден артикул въвден от потребителя
 void orderCancellation() {
 	ifstream in(ORDER_FILE);
@@ -435,7 +431,6 @@ bool isExistArticle(int articleId) {
 		}
 		digit = 0;
 	}
-
 
 	file.close();
 	return false;
@@ -855,8 +850,6 @@ void sortOrdersAlphabetical(Order orders[], int countOrders) {
 			orders[i + 1].countArticleForOrder = temp;
 		}
 	}
-
-
 }
 
 // Взима броя на поръчките
