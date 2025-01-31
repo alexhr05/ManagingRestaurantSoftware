@@ -1,5 +1,0 @@
-1;Salad Shopska;3.30
-2;Salad Ceaser;5.30
-3;Soup Topcheta;2.50
-13;Schnitzel;12.50
-14;kaka;14.45
