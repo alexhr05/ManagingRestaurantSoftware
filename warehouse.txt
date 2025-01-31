@@ -1,3 +1,0 @@
-adwadw
-cucumber
-lettuce
