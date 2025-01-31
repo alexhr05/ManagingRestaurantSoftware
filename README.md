@@ -10,7 +10,7 @@ Efficient and simple software for restaurant. Here you can manage your warehouse
 6. View the profits for the day
 7. See all your options
 
-##MANAGER
+## MANAGER
 1. Overview of the menu
 2. Make order
 3. Order cancellation
