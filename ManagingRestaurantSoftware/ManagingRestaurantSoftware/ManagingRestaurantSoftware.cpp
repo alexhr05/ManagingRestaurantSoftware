@@ -322,7 +322,7 @@ void appendInMenuFile(char* text) {
 
 void writeInOrderFileAppend(char* text) {
 	ofstream file(ORDER_FILE, ios::app);
-	
+
 	file << text;
 
 	file.close();
@@ -399,10 +399,10 @@ void orderCancellation() {
 		indexWithoutLastOrders++;
 	}
 
-	withoutLastOrders[indexWithoutLastOrders-1] = '\0';
+	withoutLastOrders[indexWithoutLastOrders - 1] = '\0';
 	writeInOrderFile(withoutLastOrders);
 
-	cout << "Cancel succesfully!"<<endl;
+	cout << "Cancel succesfully!" << endl;
 
 	in.close();
 }
@@ -707,7 +707,7 @@ void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 
 				indexContentFile++;
 			}
-			
+
 			indexContentFile += 2;
 			while (contentFile[indexContentFile] >= '0' && contentFile[indexContentFile] <= '9')
 			{
@@ -852,7 +852,7 @@ void sortOrdersAlphabetical(Order orders[], int countOrders) {
 			swapOrders(orders[i].articlesFromOrder, orders[i + 1].articlesFromOrder);
 			temp = orders[i].countArticleForOrder;
 			orders[i].countArticleForOrder = orders[i + 1].countArticleForOrder;
-			orders[i+1].countArticleForOrder = temp;
+			orders[i + 1].countArticleForOrder = temp;
 		}
 	}
 
@@ -1071,7 +1071,7 @@ void rewriteNewValueOfQuantity(char* contentFile, char* newQuantityInCharArray, 
 		contentFile[index] = newQuantityInCharArray[indexForQuantityArray];
 		indexForQuantityArray++;
 		index++;
-		
+
 	}
 	writeInWarehouseFile(contentFile);
 
@@ -1184,16 +1184,16 @@ void updateLeftProductInWaehouseFile(int productId, int quantityProduct) {
 			rewriteNewValueOfQuantity(contentFile, newQuantityInCharArray, oldQuantityInCharArray, index);
 			delete[] newQuantityInCharArray;
 			delete[] oldQuantityInCharArray;
-			
+
 		}
 		if (contentFile[index] == '\n' || contentFile[index] == '\0') {
 			isIndexOnId = true;
 		}
 		index++;
-		
+
 	}
 	in.close();
-	
+
 }
 
 // Проверява дали количеството в склада на даден продукт ще стане отрицателно или 0 и ако е така не се извършва поръчката
@@ -1237,10 +1237,10 @@ void isAvailableUpdateLeftProductInWaehouseFile(int productId, int quantityProdu
 			}
 			//Намаляваме количеството на продукта
 			currentQuantityProduct -= quantityProduct;
-			
+
 			if (currentQuantityProduct <= 0) {
 				isAvailableProducts = false;
-				break;				
+				break;
 			}
 		}
 		if (contentFile[index] == '\n' || contentFile[index] == '\0') {
@@ -1346,7 +1346,7 @@ bool readRecipesFileAndCheckIsAvailableProductQuantity(int orders[], int sizeArt
 					index++;
 				}
 				isAvailableUpdateLeftProductInWaehouseFile(productId, quantityProduct, isAvailableProducts);
-				
+
 				if (isAvailableProducts != true) {
 					break;
 				}
@@ -1432,7 +1432,7 @@ void makeOrder() {
 	else {
 		cout << "Cannot place order due to unavailability of products" << endl;
 	}
-	
+
 }
 
 // Намира последното Id на съществиващ артикул в менюто
@@ -1522,17 +1522,23 @@ void addNewArticleToMenu() {
 
 	cout << "Enter the price of article:";
 	cin >> articlePrice;
-	articlePriceCastToInt = articlePrice * 100;
+	if (articlePrice > 0) {
+		articlePriceCastToInt = articlePrice * 100;
 
-	newLineInMenu[index++] = '\n';
-	addNumberToCharArray(newLineInMenu, newArticleId, index);
+		newLineInMenu[index++] = '\n';
+		addNumberToCharArray(newLineInMenu, newArticleId, index);
 
-	addNewArticleNameToOrder(newLineInMenu, aritcleName, index);
-	index = textLength(newLineInMenu);
+		addNewArticleNameToOrder(newLineInMenu, aritcleName, index);
+		index = textLength(newLineInMenu);
 
-	addNumberToCharArray(newLineInMenu, articlePriceCastToInt, index);
+		addNumberToCharArray(newLineInMenu, articlePriceCastToInt, index);
 
-	appendInMenuFile(newLineInMenu);
+		appendInMenuFile(newLineInMenu);
+	}
+	else {
+		cout << "Incorrect input data!" << endl;
+	}
+
 }
 
 //Изтрива артикул от менюто
@@ -1709,30 +1715,36 @@ void addNewProductToWarehouse() {
 
 	cout << "Enter quantity of this product (in grams):";
 	cin >> grams;
-	newLineInWarehouse[index++] = '\n';
-	newLineInWarehouse[index] = '\0';
-	//Добавям +1 на id-то за новия продукт и го вкарвам в char масив
-	addNewElementsToCharArray(newLineInWarehouse, lastIdOfProduct);
-	sizeNewLineInWarehouse = textLength(newLineInWarehouse);
-	newLineInWarehouse[sizeNewLineInWarehouse++] = ';';
-	newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
+	if (grams > 0) {
+		newLineInWarehouse[index++] = '\n';
+		newLineInWarehouse[index] = '\0';
+		//Добавям +1 на id-то за новия продукт и го вкарвам в char масив
+		addNewElementsToCharArray(newLineInWarehouse, lastIdOfProduct);
+		sizeNewLineInWarehouse = textLength(newLineInWarehouse);
+		newLineInWarehouse[sizeNewLineInWarehouse++] = ';';
+		newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
 
-	//Добавям името на продукта в масива
-	addNewElementsToCharArray(newLineInWarehouse, product);
-	sizeNewLineInWarehouse = textLength(newLineInWarehouse);
-	newLineInWarehouse[sizeNewLineInWarehouse++] = ';';
-	newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
+		//Добавям името на продукта в масива
+		addNewElementsToCharArray(newLineInWarehouse, product);
+		sizeNewLineInWarehouse = textLength(newLineInWarehouse);
+		newLineInWarehouse[sizeNewLineInWarehouse++] = ';';
+		newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
 
-	addNumbersCorrectlyToCharArray(gramsInCharArray, grams);
+		addNumbersCorrectlyToCharArray(gramsInCharArray, grams);
 
-	addNewElementsToCharArray(newLineInWarehouse, gramsInCharArray);
+		addNewElementsToCharArray(newLineInWarehouse, gramsInCharArray);
 
-	sizeNewLineInWarehouse = textLength(newLineInWarehouse);
-	newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
+		sizeNewLineInWarehouse = textLength(newLineInWarehouse);
+		newLineInWarehouse[sizeNewLineInWarehouse] = '\0';
 
-	AppendInWarehouseFile(newLineInWarehouse);
+		AppendInWarehouseFile(newLineInWarehouse);
 
-	delete[] lastIdOfProduct;
+		delete[] lastIdOfProduct;
+	}
+	else {
+		cout << "Incorrect input data!" << endl;
+	}
+
 }
 
 //Изтрива продукт от склада
@@ -1811,7 +1823,7 @@ int getCountNewLine(char* contentFile) {
 			counterNewLine++;
 		}
 	}
-	
+
 	return counterNewLine;
 }
 
@@ -1875,37 +1887,12 @@ void showReportForToday() {
 // Заглавие 
 void entryTitles() {
 	cout << endl;
-	
-	cout << "W       W  EEEEE  L       CCCCC  OOOOO  M     M  EEEEE" << endl;
-	cout << "W       W  E      L      C       O   O  MM   MM  E    " << endl;
-	cout << "W   W   W  EEEE   L      C       O   O  M M M M  EEEE " << endl;
-	cout << " W W W W   E      L      C       O   O  M  M  M  E    " << endl;
-	cout << "  W   W    EEEEE  LLLLL   CCCCC  OOOOO  M     M  EEEEE" << endl;
+	cout << "   WELCOME TO" << endl;
 	cout << endl;
-
-	cout << " 		TTTTT  OOOOO        MM   MM  YY    YY" << endl;
-	cout << "		  T    O   O        M M M M   YY  YY  " << endl;
-	cout << "	      T    O   O        M  M  M     YY    " << endl;
-	cout << "	      T    O   O        M     M     YY    " << endl;
-	cout << "	      T    OOOOO        M     M     YY    " << endl;
+	cout << "       MY" << endl;
 	cout << endl;
-
-	/*cout << "MM   MM  YY    YY " << endl;
-	cout << "M M M M   YY  YY  " << endl;
-	cout << "M  M  M     YY    " << endl;
-	cout << "M     M     YY    " << endl;
-	cout << endl;*/
-
-	cout << "RRRR	EEEEE  SSSS	TTTTT	  A		 U	 U RRRR		  A		 N	 N	TTTTT" << endl;
-	cout << "R   R	E      S      T		 A A	 U	 U R   R	 A A	 NN	 N	  T  " << endl;
-	cout << "RRRR	EEEE   SSSS	  T	    A   A	 U	 U RRRR		A   A	 N N N	  T	 " << endl;
-	cout << "RR     E         S   T	   AAAAAAA	 U	 U RR	   AAAAAAA	 N	NN	  T	 " << endl;
-	cout << "R RR	EEEEE  SSSS	  T	  A		  A	  UUU  R RR	  A		  A	 N	 N	  T  " << endl;
+	cout << " RESTAURANT SOFTWARE " << endl;
 	cout << endl;
-	/*cout << "    WELCOME TO" << endl;
-	cout << "    RESTAURANT SOFTWARE " << endl;
-	cout << endl;*/
-
 }
 
 void showOptionsForWaiter() {
@@ -1922,7 +1909,7 @@ void showOptionsForManager() {
 
 int main()
 {
-	char typeOfWorker;// = getTypeOfWorker();
+	char typeOfWorker;
 
 	char product[MAX_SIZE_CHAR_ARRAY];
 	int action;
@@ -1965,7 +1952,8 @@ int main()
 			}
 			else if (action == 6) {
 				showTurnoverForToday();
-			}else  if (action == 7) {
+			}
+			else  if (action == 7) {
 				showOptionsForWaiter();
 			}
 		} while (action >= 1 || action <= 7);
