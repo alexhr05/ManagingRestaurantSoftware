@@ -30,9 +30,9 @@ const char TURNOVER_PER_DAY_FILE[] = "turnoverPerDay.txt";
 
 const char RECIPES_FILE[] = "recipes.txt";
 
-const char WAITER_MENU_OPTIONS[] = "1. Overview of the menu\n2. Make Order\n3. Order cancellation\n4. View past orders\n5. View past orders in alphabetical order as well as the number of orders of each item\n6. View the profits for the day";
+const char WAITER_MENU_OPTIONS[] = "1. Overview of the menu\n2. Make Order\n3. Order cancellation\n4. View past orders\n5.View past orders in alphabetical order as well as the number of orders of each item\n6.View the profits for the day\n7.See all your options";
 
-const char MANAGER_MENU_OPTIONS[] = "1. Overview of the menu\n2. Make order\n3. Order cancellation\n4. View past orders in alphabetical order as well as the number of orders of each item\n5. View past orders\n6. Overview of what is left and of what\n7. Remove a product from warehouse\n8. Add a new product to the warehouse\n9. View the profits for the day\n10. Taking a report for the day\n11. Subtract all turnovers from a given date to now\n12. Adding a new product to the menu\n13. Remove a product from the menu";
+const char MANAGER_MENU_OPTIONS[] = "1. Overview of the menu\n2. Make order\n3. Order cancellation\n4. View past orders in alphabetical order as well as the number of orders of each item\n5. View past orders\n6. Overview of what is left and of what\n7. Remove a product from warehouse\n8. Add a new product to the warehouse\n9. View the profits for the day\n10. Taking a report for the day\n11. Adding a new product to the menu\n12. Remove a product from the menu\n13.See all your options";
 
 const int BUFFER_SIZE = 1024;
 
@@ -52,6 +52,7 @@ enum workersType {
 	MANAGER = 'm'
 };
 
+//Връща дължината на подадения му char масив
 int textLength(char* text) {
 	int counter = 0;
 
@@ -113,21 +114,19 @@ void readFromMenuFile() {
 		cout << "Error";
 		return;
 	}
-
-	char line[MAX_SIZE_CHAR_ARRAY];
 	cout << endl;
+	cout << "MENU:" << endl;
+	char line[MAX_SIZE_CHAR_ARRAY];
 
 	while (in.getline(line, BUFFER_SIZE)) {
-		cout << endl;
 		cout << line << endl;
-		char sub[] = "Soup";
-		cout << "isContain:" << searchSubString(line, sub) << endl;
 	}
 	cout << endl;
 
 	in.close();
 }
 
+//Взима деня от файла с текущата дата
 int readFromTodayDateFile() {
 	ifstream in(TODAY_DATE_FILE);
 
@@ -142,14 +141,11 @@ int readFromTodayDateFile() {
 
 	//Взима единствения елемент на файла, който е просто ден
 	in.getline(line, BUFFER_SIZE);
-	cout << "line=" << line << endl;
 	while (line[index] >= '0' && line[index] <= '9') {
 		day = day * 10 + (line[index] - '0');
 		index++;
-		cout << "day=" << day << endl;
 	}
 	in.close();
-	cout << "day=" << day << endl;
 	return day;
 }
 
@@ -171,7 +167,7 @@ void readFromOrderFile() {
 	in.close();
 }
 
-
+//Търси опрделен артикул чрез Id-то му
 void searchArticleInMenu(int numberOrder) {
 	ifstream in(MENU_FILE);
 	if (!in.is_open()) {
@@ -195,14 +191,14 @@ void searchArticleInMenu(int numberOrder) {
 				cout << line[j];
 				j++;
 			}
-
 		}
-
 		index = 0;
 	}
 	in.close();
 }
 
+
+//Намира името на артикул в менюто и го записва в масива line
 void findNameOfArticleInMenu(char* line) {
 	int numberOrder = 0;
 
@@ -221,11 +217,10 @@ void findNameOfArticleInMenu(char* line) {
 		}
 
 	}
-
 	cout << endl;
-
 }
 
+//Търси цената на определен артикул в менюто
 int searchPriceInMenu(int numberOrder) {
 	ifstream in(MENU_FILE);
 	if (!in.is_open()) {
@@ -247,12 +242,10 @@ int searchPriceInMenu(int numberOrder) {
 			i++;
 		}
 		if (articleId == numberOrder) {
-			cout << "articleId=" << articleId << endl;
 			// Това е за да може да започне директно да чете от името на артикула във файла, заради синтаксиса на файла
 			while (line[i] < '0' || line[i] > '9') {
 				i++;
 			}
-
 			while (line[i] >= '0' && line[i] <= '9') {
 				number = number * 10 + (line[i] - '0');
 				i++;
@@ -268,32 +261,7 @@ int searchPriceInMenu(int numberOrder) {
 	return sumOfPrice;
 }
 
-int findPriceOfArticle(char* line) {
-	int numberOrder = 0;
-	int turnoverFromOrder = 0;
-	// +1 е, за да пропусне символа точкаи запетая и да почне да чете директно от поръчка номерата на артикулите
-	for (int j = DATE_LENGTH + 1; j <= textLength(line); j++) {
-
-		while (line[j] >= '0' && line[j] <= '9') {
-			numberOrder = numberOrder * 10 + (line[j] - '0');
-			j++;
-		}
-
-		if (line[j] == ';') {
-			turnoverFromOrder += searchPriceInMenu(numberOrder);
-			numberOrder = 0;
-		}
-
-	}
-
-	cout << endl;
-
-	return turnoverFromOrder;
-
-}
-
-
-
+// Показва всички поръчки от файла
 void showOrders() {
 	ifstream in(ORDER_FILE);
 
@@ -308,57 +276,19 @@ void showOrders() {
 	while (in.getline(line, BUFFER_SIZE)) {
 		cout << (counter++) << " - " << line;
 		cout << "  -  ";
-
+		// Замества Id-то на артикула в поръчки с името му от менюто
 		findNameOfArticleInMenu(line);
 	}
 	in.close();
 }
 
-void showTurnoverForToday() {
-	ifstream in(TURNOVER_PER_DAY_FILE);
 
-	if (!in.is_open()) {
-		cout << "Error";
-	}
-	int todayDay = readFromTodayDateFile();
-	char line[MAX_SIZE_CHAR_ARRAY];
-	int dayFromDate;
-	int index = 0;
-	float turnoverForToday = 0;
-	int number = 0;
-
-	while (in.getline(line, BUFFER_SIZE)) {
-		dayFromDate = 0;
-		index = 0;
-		while (line[index] >= '0' && line[index] <= '9')
-		{
-			dayFromDate = dayFromDate * 10 + (line[index] - '0');
-			index++;
-		}
-		if (dayFromDate == todayDay) {
-			while (line[index] != ';') {
-				index++;
-			}
-			index++;
-			while (line[index] >= '0' && line[index] <= '9') {
-				number = number * 10 + (line[index] - '0');
-				index++;
-			}
-
-			turnoverForToday += number;
-
-		}
-	}
-	cout << "Turnover For Today: " << turnoverForToday / 100 << endl;
-
-	in.close();
-}
 
 void AppendInWarehouseFile(char* text) {
 	ofstream file(WAREHOUSE_FILE, ios::app);
 
 	file << text;
-	cout << "Minava zapis";
+
 	file.close();
 
 }
@@ -376,7 +306,7 @@ void writeIntodayDateFile(char* text) {
 	ofstream file(TODAY_DATE_FILE);
 
 	file << text;
-	cout << "Minava uspeshno" << endl;
+
 	file.close();
 
 }
@@ -427,13 +357,15 @@ void writeInTurnoverPerDayFile(char* updatedTurnover) {
 
 void appendInTurnoverPerDayFile(char* updatedTurnover) {
 	ofstream file(TURNOVER_PER_DAY_FILE, ios::app);
-	cout << "conentFileFInalVersion=" << updatedTurnover << endl;
+
 	file << updatedTurnover;
 
 	file.close();
 
 }
 
+
+// Отменя поръчка, ако не съществува даден артикул въвден от потребителя
 void orderCancellation() {
 	ifstream in(ORDER_FILE);
 
@@ -467,21 +399,20 @@ void orderCancellation() {
 		indexWithoutLastOrders++;
 	}
 
-	withoutLastOrders[indexWithoutLastOrders] = '\0';
+	withoutLastOrders[indexWithoutLastOrders-1] = '\0';
 	writeInOrderFile(withoutLastOrders);
 
-	cout << "Cancel succesfully!!!";
+	cout << "Cancel succesfully!"<<endl;
 
 	in.close();
 }
 
 void showDetailedOrder() {
 	showOrders();
-
 	cout << endl;
-
 }
 
+//Проверява дали съществува даден артикул 
 bool isExistArticle(int articleId) {
 	ifstream file(MENU_FILE);
 	char line[BUFFER_SIZE];
@@ -510,10 +441,8 @@ bool isExistArticle(int articleId) {
 	return false;
 }
 
-
+// Преобразува деня, който сме запазили във файла с дата в текущия ден
 int getDayOfDayFile(int todayDay) {
-
-	cout << "TOdayDay GETTODAYDATE=" << todayDay << endl;
 	int index = 0;
 	const int numberMonths = 12;
 	int monthsWithDays[numberMonths] = { 31,28,31,30,31, 30,31,31,30,31,30,31 };
@@ -526,6 +455,7 @@ int getDayOfDayFile(int todayDay) {
 	return todayDay;
 }
 
+// Преобразува деня, който сме запазили във файла с дата в текущия месец
 int getMonthOfDayFile() {
 	int month;
 	const int numberMonths = 12;
@@ -541,6 +471,7 @@ int getMonthOfDayFile() {
 	return month;
 }
 
+// Образува цялостната текуща дата във формата dd/mm/yyyy
 char* getTodayDate() {
 	int todayDay = readFromTodayDateFile();
 	char* todayDate = new char[DATE_LENGTH + 1];
@@ -593,6 +524,7 @@ char* getTodayDate() {
 	return todayDate;
 }
 
+// Взима индекса на последния записан ред във файла с оборота
 int getIndexLastLineForTurnover(char* contentFile, int counterNewLine) {
 	int indexLine = 0;
 	int indexContentFile = 0;
@@ -618,6 +550,7 @@ void strCopy(char* dest, char* src) {
 	dest[index] = '\0';
 }
 
+// Брои цифрите на число
 int countDigits(int copyOfturnoverForToday) {
 	int counter = 0;
 	while (copyOfturnoverForToday != 0) {
@@ -627,6 +560,7 @@ int countDigits(int copyOfturnoverForToday) {
 	return counter;
 }
 
+// Обръща реда на char масива
 void reverseArray(char* charArray, int size) {
 	for (int i = 0; i < size - 1; i++) {
 		for (int j = 0; j < size - i - 1; j++) {
@@ -637,6 +571,7 @@ void reverseArray(char* charArray, int size) {
 	}
 }
 
+// Обновява оборота за деня, ако съществува запис за текущата дата какъв е оборота
 void changeTurnoverForTodayInString(char* contentFile, int turnoverForToday, int indexLastLine) {
 	//Конвертира число от float в int тип, като закгрълява до най-близкото цяло число
 	// Измествам десетичната запетая надясно, за да направя цяло число
@@ -652,15 +587,7 @@ void changeTurnoverForTodayInString(char* contentFile, int turnoverForToday, int
 		turnoverForToday /= 10;
 	}
 	newTurnover[index] = '\0';
-	/*cout << "newTurnover=" << newTurnover << endl;*/
 	reverseArray(newTurnover, sizeNewTurnover);
-	/*for (int i = 0; i < sizeNewTurnover - 1; i++) {
-		for (int j = 0; j < sizeNewTurnover - i - 1; j++) {
-			int temp = newTurnover[j];
-			newTurnover[j] = newTurnover[j + 1];
-			newTurnover[j + 1] = temp;
-		}
-	}*/
 
 	index = 0;
 	while (newTurnover[index] != '\0') {
@@ -672,7 +599,7 @@ void changeTurnoverForTodayInString(char* contentFile, int turnoverForToday, int
 	delete[] newTurnover;
 }
 
-
+// Ако не съществува запис във файла с оборота за деня, добавя нов ред с текущата дата и оборота за деня
 void addTurnoverForTodayInString(int sumPriceArticle) {
 	int sizeNewTurnover = countDigits(sumPriceArticle);
 	char* todayDateForFile = getTodayDate();
@@ -692,7 +619,6 @@ void addTurnoverForTodayInString(int sumPriceArticle) {
 
 	index = 0;
 	// Да запише реда на нов ред във файла
-	cout << "todayDateForFile=" << todayDateForFile << endl;
 	lineToAppend[indexLineToAppend++] = '\n';
 	while (todayDateForFile[index] != '\0') {
 		lineToAppend[indexLineToAppend] = todayDateForFile[index];
@@ -714,6 +640,7 @@ void addTurnoverForTodayInString(int sumPriceArticle) {
 	delete[] newTurnover;
 }
 
+// Фунцкия за сглобяване на оборота заденя и проверка дали съществува запис за текущия ден
 void overwriteTodayTurnoverInFile(char* contentFile, int sumPriceArticle, int counterNewLine, bool isExistTodayDate) {
 	int indexLastLine = getIndexLastLineForTurnover(contentFile, counterNewLine);
 	// Прескачам дължината на датата, която е фиксирана и директно почвам да заменям стойността на предишния оборот
@@ -744,9 +671,7 @@ void overwriteTodayTurnoverInFile(char* contentFile, int sumPriceArticle, int co
 	cout << endl;
 }
 
-
-
-
+// Преглежда файла с оборотите и гледа дали съществува текущата дата и отива в друга фунцкия
 void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 	ifstream in(TURNOVER_PER_DAY_FILE);
 
@@ -762,8 +687,6 @@ void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 	int todayDay = readFromTodayDateFile();
 	int dayOfTodayDate = getDayOfDayFile(todayDay);
 	int monthOfTodayDate = getMonthOfDayFile();
-	cout << "dayOfTodayDate=" << dayOfTodayDate << endl;
-	cout << "monthOfTodayDate=" << monthOfTodayDate << endl;
 	int dayFromFile = 0;
 	int monthFromFile = 0;
 	int index = 0;
@@ -772,11 +695,9 @@ void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 
 	bool isExistTodayDate = false;
 	bool isIndexOnDateDay = true;
-	int indexLastLine;
 
 	in.getline(contentFile, BUFFER_SIZE, '\0');
 	while (contentFile[indexContentFile] != '\0') {
-		cout << "contentFile[indexContentFile]="<< contentFile[indexContentFile] << endl;
 		if (isIndexOnDateDay) {
 			dayFromFile = 0;
 			monthFromFile = 0;
@@ -786,22 +707,18 @@ void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 
 				indexContentFile++;
 			}
-			cout << "dayFromFile=" << dayOfTodayDate << endl;
 			
 			indexContentFile += 2;
 			while (contentFile[indexContentFile] >= '0' && contentFile[indexContentFile] <= '9')
 			{
-				cout << "contentFile[indexContentFile]=" << contentFile[indexContentFile] << endl;
 				monthFromFile = monthFromFile * 10 + (contentFile[indexContentFile] - '0');
 
 				indexContentFile++;
 			}
-			cout << "monthFromFile=" << monthFromFile << endl;
 			isIndexOnDateDay = false;
 		}
 
 		if (dayOfTodayDate == dayFromFile && monthOfTodayDate == monthFromFile) {
-			cout << "todayDay=" << todayDay << "; dayFromFile=" << dayFromFile << endl;
 			isExistTodayDate = true;
 		}
 
@@ -812,13 +729,12 @@ void updateTurnoverInFile(char* todayDate, int sumPriceArticle) {
 
 		indexContentFile++;
 	}
-	cout << "contentFile=" << contentFile << endl;
 	overwriteTodayTurnoverInFile(contentFile, sumPriceArticle, counterNewLine, isExistTodayDate);
 
 	in.close();
 }
 
-
+// Взима дължината на името на артикула
 int getLengthOfArticleNameFromMenu(int numberOrder) {
 	ifstream in(MENU_FILE);
 	if (!in.is_open()) {
@@ -845,8 +761,6 @@ int getLengthOfArticleNameFromMenu(int numberOrder) {
 			}
 			//За да се включи и дължината на терминиращата нула
 			currentLengthArticleName++;
-
-
 		}
 
 		index = 0;
@@ -856,7 +770,7 @@ int getLengthOfArticleNameFromMenu(int numberOrder) {
 	return currentLengthArticleName;
 }
 
-
+// Връща като char масив името на артикула от менюто
 char* searchArticleNameInMenu(int numberOrder) {
 	ifstream in(MENU_FILE);
 	if (!in.is_open()) {
@@ -885,7 +799,6 @@ char* searchArticleNameInMenu(int numberOrder) {
 			}
 
 		}
-
 		index = 0;
 	}
 	in.close();
@@ -894,8 +807,7 @@ char* searchArticleNameInMenu(int numberOrder) {
 
 }
 
-
-
+// Проверява дали order1 като поръчка е лексикографски по-голям или не от order2
 int compareTwoOrders(char* order1, char* order2) {
 	int index = 0;
 	while (order1[index] != '\0' && order2[index] != '\0') {
@@ -911,6 +823,7 @@ int compareTwoOrders(char* order1, char* order2) {
 	return 0;
 }
 
+// Копира char масив
 void strCopy(char* destination, const char* original) {
 	int i = 0;
 	while (original[i] != '\0') {
@@ -920,6 +833,7 @@ void strCopy(char* destination, const char* original) {
 	destination[i] = '\0';
 }
 
+// Сменя местата на char масиви 
 void swapOrders(char* order1, char* order2) {
 	char temp[MAX_SIZE_CHAR_ARRAY];
 	strCopy(temp, order1);
@@ -927,23 +841,25 @@ void swapOrders(char* order1, char* order2) {
 	strCopy(order2, temp);
 }
 
+
 void sortOrdersAlphabetical(Order orders[], int countOrders) {
 	int sizeOrders = 0;
-	/*bool isThereDifferenceInOrder = true;*/
 	for (int i = 0; i < countOrders - 1; i++) {
 		sizeOrders = textLength(orders[i].articlesFromOrder);
 		int indexArticlesFromOrder = 0;
+		int temp;
 		if (compareTwoOrders(orders[i].articlesFromOrder, orders[i + 1].articlesFromOrder) == 1 || compareTwoOrders(orders[i].articlesFromOrder, orders[i + 1].articlesFromOrder) == 0) {
 			swapOrders(orders[i].articlesFromOrder, orders[i + 1].articlesFromOrder);
+			temp = orders[i].countArticleForOrder;
+			orders[i].countArticleForOrder = orders[i + 1].countArticleForOrder;
+			orders[i+1].countArticleForOrder = temp;
 		}
 	}
-	cout << "after swap" << endl;
-	for (int i = 0; i < countOrders; i++) {
-		cout << "order[" << i << "]=" << orders[i].articlesFromOrder << endl;
-	}
+
 
 }
 
+// Взима броя на поръчките
 int getCounterOfOrders() {
 	ifstream in(ORDER_FILE);
 
@@ -966,6 +882,7 @@ int getCounterOfOrders() {
 	return counterNewLine;
 }
 
+// Взима броя артикули в една поръчка, за да се създаде динамичен масив предварително
 int getSizeOfArticleIdInOrderArray(int articleIdInOrder[]) {
 	int index = 0;
 	while (articleIdInOrder[index] != 0) {
@@ -978,6 +895,7 @@ int getSizeOfArticleIdInOrderArray(int articleIdInOrder[]) {
 	return index;
 }
 
+// Взима броя артикули в една поръчка
 int getSizeOfArticlesInOrder(int articleIdInOrder[]) {
 
 	char line[MAX_SIZE_CHAR_ARRAY];
@@ -993,7 +911,6 @@ int getSizeOfArticlesInOrder(int articleIdInOrder[]) {
 			cout << "Error";
 
 		}
-
 		while (in.getline(line, MAX_SIZE_CHAR_ARRAY)) {
 			indexLine = 0;
 			articleId = 0;
@@ -1017,6 +934,7 @@ int getSizeOfArticlesInOrder(int articleIdInOrder[]) {
 	return counter;
 }
 
+// Връща char масив от името на артикул
 char* getArticlesName(int articleIdInOrder[], int& countArticleOrder) {
 	char line[MAX_SIZE_CHAR_ARRAY];
 	char* allArticlesInOrder = new char[getSizeOfArticlesInOrder(articleIdInOrder) + 1];
@@ -1060,6 +978,7 @@ char* getArticlesName(int articleIdInOrder[], int& countArticleOrder) {
 	return allArticlesInOrder;
 }
 
+// Основната фунцкия за сортиране по азбучен ред
 void getNamesOfArticleAndSortOrders() {
 	ifstream in(ORDER_FILE);
 
@@ -1112,6 +1031,7 @@ void getNamesOfArticleAndSortOrders() {
 	}
 }
 
+// Връща число, което е броя цифри в числото, което отговаря за количеството продукти
 int getCountDigitsCurrentQuantityProduct(int currentQuantityProduct) {
 	int counter = 0;
 	while (currentQuantityProduct != 0) {
@@ -1122,6 +1042,7 @@ int getCountDigitsCurrentQuantityProduct(int currentQuantityProduct) {
 	return counter++;
 }
 
+// Връща char масив от количеството на продукти
 char* turningNumberInCharArray(int currentQuantityProduct) {
 	int index = 0;
 	int digit = 0;
@@ -1138,9 +1059,8 @@ char* turningNumberInCharArray(int currentQuantityProduct) {
 	return source;
 }
 
+// Презаписва новата стойност за количество на продукт
 void rewriteNewValueOfQuantity(char* contentFile, char* newQuantityInCharArray, char* oldQuantityInCharArray, int index) {
-	cout << endl;
-	cout << endl;
 	index -= textLength(oldQuantityInCharArray);
 	int indexForQuantityArray = 0;
 
@@ -1157,6 +1077,68 @@ void rewriteNewValueOfQuantity(char* contentFile, char* newQuantityInCharArray, 
 
 }
 
+bool checkIsAvailableToChangeProductInWarehouse(int productId, int quantityProduct) {
+	ifstream in(WAREHOUSE_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+
+	char contentFile[MAX_SIZE_CHAR_ARRAY];
+	int index = 0;
+	int currentIdProduct = 0;
+	int currentQuantityProduct = 0;
+	bool isIndexOnId = true;
+
+	in.getline(contentFile, MAX_SIZE_CHAR_ARRAY, '\0');
+	while (contentFile[index] != '\0') {
+		if (isIndexOnId) {
+			currentIdProduct = 0;
+			while (contentFile[index] >= '0' && contentFile[index] <= '9') {
+				currentIdProduct = currentIdProduct * 10 + contentFile[index] - '0';
+				index++;
+			}
+			isIndexOnId = false;
+		}
+
+		if (currentIdProduct == productId) {
+			//За да прескочи точката и запетая като символ
+			index++;
+			currentQuantityProduct = 0;
+			while (contentFile[index] != ';') {
+				index++;
+
+			}
+			index++;
+
+			while (contentFile[index] >= '0' && contentFile[index] <= '9') {
+				currentQuantityProduct = currentQuantityProduct * 10 + contentFile[index] - '0';
+				index++;
+			}
+
+			//Намаляваме количеството на продукта
+			currentQuantityProduct -= quantityProduct;
+			if (currentQuantityProduct > 0) {
+				return true;
+			}
+			else {
+				return false;
+			}
+
+
+		}
+		if (contentFile[index] == '\n') {
+			isIndexOnId = true;
+
+		}
+		index++;
+
+	}
+	in.close();
+
+}
+
+// Обновява колко е останало от даден продукт като количество
 void updateLeftProductInWaehouseFile(int productId, int quantityProduct) {
 	ifstream in(WAREHOUSE_FILE);
 
@@ -1183,14 +1165,69 @@ void updateLeftProductInWaehouseFile(int productId, int quantityProduct) {
 			}
 			isIndexOnId = false;
 		}
-
 		if (currentIdProduct == productId) {
 			//За да прескочи точката и запетая като символ
 			index++;
 			currentQuantityProduct = 0;
 			while (contentFile[index] != ';') {
 				index++;
-				
+			}
+			index++;
+			while (contentFile[index] >= '0' && contentFile[index] <= '9') {
+				currentQuantityProduct = currentQuantityProduct * 10 + contentFile[index] - '0';
+				index++;
+			}
+			oldQuantityInCharArray = turningNumberInCharArray(currentQuantityProduct);
+			//Намаляваме количеството на продукта
+			currentQuantityProduct -= quantityProduct;
+			newQuantityInCharArray = turningNumberInCharArray(currentQuantityProduct);
+			rewriteNewValueOfQuantity(contentFile, newQuantityInCharArray, oldQuantityInCharArray, index);
+			delete[] newQuantityInCharArray;
+			delete[] oldQuantityInCharArray;
+			
+		}
+		if (contentFile[index] == '\n' || contentFile[index] == '\0') {
+			isIndexOnId = true;
+		}
+		index++;
+		
+	}
+	in.close();
+	
+}
+
+// Проверява дали количеството в склада на даден продукт ще стане отрицателно или 0 и ако е така не се извършва поръчката
+void isAvailableUpdateLeftProductInWaehouseFile(int productId, int quantityProduct, bool& isAvailableProducts) {
+	ifstream in(WAREHOUSE_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+		return;
+	}
+
+	char contentFile[MAX_SIZE_CHAR_ARRAY];
+	int index = 0;
+	int currentIdProduct = 0;
+	int currentQuantityProduct = 0;
+	bool isIndexOnId = true;
+
+	in.getline(contentFile, MAX_SIZE_CHAR_ARRAY, '\0');
+	while (contentFile[index] != '\0') {
+		if (isIndexOnId) {
+			currentIdProduct = 0;
+			while (contentFile[index] >= '0' && contentFile[index] <= '9') {
+				currentIdProduct = currentIdProduct * 10 + contentFile[index] - '0';
+				index++;
+			}
+			isIndexOnId = false;
+		}
+		if (currentIdProduct == productId) {
+			//За да прескочи точката и запетая като символ
+			index++;
+			currentQuantityProduct = 0;
+			while (contentFile[index] != ';') {
+				index++;
+
 			}
 			index++;
 
@@ -1198,34 +1235,32 @@ void updateLeftProductInWaehouseFile(int productId, int quantityProduct) {
 				currentQuantityProduct = currentQuantityProduct * 10 + contentFile[index] - '0';
 				index++;
 			}
-			
-			oldQuantityInCharArray = turningNumberInCharArray(currentQuantityProduct);
 			//Намаляваме количеството на продукта
 			currentQuantityProduct -= quantityProduct;
-			newQuantityInCharArray = turningNumberInCharArray(currentQuantityProduct);
-			rewriteNewValueOfQuantity(contentFile, newQuantityInCharArray, oldQuantityInCharArray, index);
-			delete[] oldQuantityInCharArray;
-			delete[] newQuantityInCharArray;
-		}
-		if (contentFile[index] == '\n') {
-			isIndexOnId = true;
 			
+			if (currentQuantityProduct <= 0) {
+				isAvailableProducts = false;
+				break;				
+			}
+		}
+		if (contentFile[index] == '\n' || contentFile[index] == '\0') {
+			isIndexOnId = true;
 		}
 		index++;
-		
-	}
-	cout << contentFile << endl;
-	in.close();
 
-	
+	}
+	in.close();
 }
 
+
+// Чете какво количество от даден продукт има в склада и неговото Id
 void readRecipesFileAndUpdateProductQuantity(int orders[], int sizeArticleInOrders) {
 	char line[MAX_SIZE_CHAR_ARRAY];
 	int articleId = 0;
 	int index = 0;
 	int productId = 0;
 	int quantityProduct = 0;
+
 	for (int i = 0; i < sizeArticleInOrders;i++) {
 		ifstream in(RECIPES_FILE);
 
@@ -1261,7 +1296,6 @@ void readRecipesFileAndUpdateProductQuantity(int orders[], int sizeArticleInOrde
 					quantityProduct = quantityProduct * 10 + line[index] - '0';
 					index++;
 				}
-
 				updateLeftProductInWaehouseFile(productId, quantityProduct);
 			}
 		}
@@ -1269,6 +1303,62 @@ void readRecipesFileAndUpdateProductQuantity(int orders[], int sizeArticleInOrde
 	}
 }
 
+// Чете какво количество от даден продукт има в склада и неговото Id
+bool readRecipesFileAndCheckIsAvailableProductQuantity(int orders[], int sizeArticleInOrders) {
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int articleId = 0;
+	int index = 0;
+	int productId = 0;
+	int quantityProduct = 0;
+	bool isAvailableProducts = true;
+
+	for (int i = 0; i < sizeArticleInOrders;i++) {
+		ifstream in(RECIPES_FILE);
+
+		if (!in.is_open()) {
+			cout << "Error";
+		}
+		while (in.getline(line, MAX_SIZE_CHAR_ARRAY)) {
+			index = 0;
+			productId = 0;
+			quantityProduct = 0;
+			articleId = 0;
+			while (line[index] >= '0' && line[index] <= '9') {
+				articleId = articleId * 10 + line[index] - '0';
+				index++;
+			}
+			if (articleId == orders[i]) {
+				//Прескача точка и запетая символа във файла
+				index++;
+				while (line[index] != ';') {
+					index++;
+				}
+				index++;
+				//Прескача точка и запетая символа във файла
+				while (line[index] >= '0' && line[index] <= '9') {
+					productId = productId * 10 + line[index] - '0';
+					index++;
+				}
+				index++;
+				//Прескача точка и запетая символа във файла
+				while (line[index] >= '0' && line[index] <= '9') {
+					quantityProduct = quantityProduct * 10 + line[index] - '0';
+					index++;
+				}
+				isAvailableUpdateLeftProductInWaehouseFile(productId, quantityProduct, isAvailableProducts);
+				
+				if (isAvailableProducts != true) {
+					break;
+				}
+
+			}
+		}
+		in.close();
+	}
+	return isAvailableProducts;
+}
+
+// Прави поръчка
 void makeOrder() {
 	int articleId;
 	int countArticleInOrders = 0;
@@ -1276,10 +1366,10 @@ void makeOrder() {
 	bool isExistArticleInMenu;
 	char completеОrder[MAX_SIZE_CHAR_ARRAY];
 	char* todayDate = getTodayDate();
-	cout << "todatDate=" << todayDate<<endl;
 	int sumPriceArticle = 0;
 	int indexForOrder = 0;
-
+	int checkAvailabeProducts = 1;
+	int updateLeftProducts = 2;;
 	do {
 		cout << endl;
 
@@ -1299,8 +1389,6 @@ void makeOrder() {
 		else {
 			cout << "Article is NOT CONTAINED" << endl;
 		}
-
-
 	} while (isExistArticleInMenu != false);
 
 	if (isExistArticleInMenu == false) {
@@ -1309,13 +1397,11 @@ void makeOrder() {
 	completеОrder[indexForOrder++] = '\n';
 	for (int i = 0; i < DATE_LENGTH; i++) {
 		completеОrder[indexForOrder++] = todayDate[i];
-		cout << completеОrder[indexForOrder];
 	}
 	cout << endl;
 
 	completеОrder[indexForOrder++] = ';';
 	for (int j = 0; j < countArticleInOrders; j++) {
-		cout << orders[j] << endl;
 		if (orders[j] >= 0 && orders[j] <= 9) {
 			completеОrder[indexForOrder++] = orders[j] + '0';
 			sumPriceArticle += searchPriceInMenu(orders[j]);
@@ -1334,21 +1420,22 @@ void makeOrder() {
 			indexForOrder += numDigits;
 		}
 		completеОrder[indexForOrder++] = ';';
-
 	}
 	cout << endl;
 	completеОrder[indexForOrder] = '\0';
 
-	if (sumPriceArticle != 0) {
-		writeInOrderFileAppend(completеОrder);
-		updateTurnoverInFile(todayDate, sumPriceArticle);
+	if (readRecipesFileAndCheckIsAvailableProductQuantity(orders, countArticleInOrders)) {
 		readRecipesFileAndUpdateProductQuantity(orders, countArticleInOrders);
+		updateTurnoverInFile(todayDate, sumPriceArticle);
+		writeInOrderFileAppend(completеОrder);
+	}
+	else {
+		cout << "Cannot place order due to unavailability of products" << endl;
 	}
 	
-	
-
 }
 
+// Намира последното Id на съществиващ артикул в менюто
 int findLastIdOfExistingArticleInMenu() {
 	ifstream in(MENU_FILE);
 
@@ -1376,9 +1463,8 @@ int findLastIdOfExistingArticleInMenu() {
 	return articleId;
 }
 
+// Добавя число към char масив
 void addNumberToCharArray(char* original, int number, int& index) {
-	cout << endl;
-	cout << endl;
 	int counter = 0;
 	int reversedNumber = 0;
 	char numberInChar[MAX_SIZE_CHAR_ARRAY];
@@ -1407,14 +1493,12 @@ void addNumberToCharArray(char* original, int number, int& index) {
 	original[index] = '\0';
 }
 
+
+// Добавя име на артикул към поръчка
 void addNewArticleNameToOrder(char* order, char* articleName, int& index) {
 	int indexArticleName = 0;
-	cout << "After articleName=" << articleName << endl;
-	cout << "Order=" << order << endl;
 	while (articleName[indexArticleName] != '\0') {
 		order[index] = articleName[indexArticleName];
-		cout << "articleName[" << indexArticleName << "]=" << articleName[indexArticleName] << endl;
-		cout << "order[" << index << "]=" << order[index] << endl;
 		index++;
 		indexArticleName++;
 	}
@@ -1422,6 +1506,8 @@ void addNewArticleNameToOrder(char* order, char* articleName, int& index) {
 	order[index] = '\0';
 }
 
+
+// Добавя нов артикул към менюто
 void addNewArticleToMenu() {
 	char aritcleName[MAX_SIZE_CHAR_ARRAY];
 	float articlePrice;
@@ -1449,6 +1535,7 @@ void addNewArticleToMenu() {
 	appendInMenuFile(newLineInMenu);
 }
 
+//Изтрива артикул от менюто
 void removeArticleFromMenu() {
 	ifstream in(MENU_FILE);
 
@@ -1491,6 +1578,7 @@ void removeArticleFromMenu() {
 	in.close();
 }
 
+// Изписва какво е останало в склада
 void seeWhatLeftsInWarehouse() {
 	ifstream in(WAREHOUSE_FILE);
 
@@ -1502,8 +1590,8 @@ void seeWhatLeftsInWarehouse() {
 
 	in.getline(contentFile, MAX_SIZE_CHAR_ARRAY, '\0');
 
-	cout << "Product name | Left in grams" << endl;
-	cout << contentFile;
+	cout << "Id product | Product name | Left in grams" << endl;
+	cout << contentFile << endl;
 
 	in.close();
 }
@@ -1511,20 +1599,16 @@ void seeWhatLeftsInWarehouse() {
 void addNewElementsToCharArray(char* destination, char* source) {
 	int index = 0;
 	int sizeDestination = textLength(destination);
-	cout << endl;
-	cout << endl;
-	cout << "sizeDestination=" << sizeDestination << endl;
+
 	while (source[index] != '\0') {
 		destination[sizeDestination] = source[index];
-		cout << "source[" << index << "]=" << source[index] << endl;
-		cout << "destination[" << sizeDestination << "]=" << destination[sizeDestination] << endl;
 		sizeDestination++;
 		index++;
 	}
 	destination[sizeDestination] = '\0';
-	cout << "destination=" << destination << endl;
 }
 
+// Добавя числа правилно към char масив
 void addNumbersCorrectlyToCharArray(char* destination, int number) {
 	int temp;
 	int index = 0;
@@ -1538,6 +1622,7 @@ void addNumbersCorrectlyToCharArray(char* destination, int number) {
 	reverseArray(destination, textLength(destination));
 }
 
+// Намира цифрите на последнто Id на продукт в склада
 int findDigitsOfLastIdProductWarehouse() {
 	ifstream in(WAREHOUSE_FILE);
 
@@ -1564,6 +1649,7 @@ int findDigitsOfLastIdProductWarehouse() {
 	return counter;
 }
 
+// Намира последното Id на продукт в склада
 char* findLastIdOfProductInWarehouse() {
 	ifstream in(WAREHOUSE_FILE);
 
@@ -1575,7 +1661,6 @@ char* findLastIdOfProductInWarehouse() {
 	int productId = 0;
 	int indexProductId = 0;
 	int index = 0;
-	cout << "findDigitsOfLastIdProductWarehouse()=" << findDigitsOfLastIdProductWarehouse() << endl;
 	in.getline(line, MAX_SIZE_CHAR_ARRAY, '\0');
 
 	while (line[index] != '\0') {
@@ -1585,7 +1670,6 @@ char* findLastIdOfProductInWarehouse() {
 
 			while (line[index] >= '0' && line[index] <= '9') {
 				productId = productId * 10 + (line[index] - '0');
-				cout << "producId=" << productId << endl;
 				index++;
 			}
 
@@ -1594,7 +1678,6 @@ char* findLastIdOfProductInWarehouse() {
 	}
 	//Увеличиаваме стойноста на новото id с +1
 	productId++;
-	cout << "productId=" << productId << endl;
 	index = 0;
 	int digit;
 	while (productId != 0) {
@@ -1611,6 +1694,7 @@ char* findLastIdOfProductInWarehouse() {
 	return lastProductId;
 }
 
+//Добавя нов продукт към склада
 void addNewProductToWarehouse() {
 	char contentFile[MAX_SIZE_CHAR_ARRAY];
 	char newLineInWarehouse[MAX_SIZE_CHAR_ARRAY];
@@ -1651,6 +1735,7 @@ void addNewProductToWarehouse() {
 	delete[] lastIdOfProduct;
 }
 
+//Изтрива продукт от склада
 void removeProductFromWarehouse() {
 	ifstream in(WAREHOUSE_FILE);
 
@@ -1693,7 +1778,7 @@ void removeProductFromWarehouse() {
 	in.close();
 }
 
-
+// Увеличава текущата дата
 void incrementDate() {
 	//За да увеличи датата с единица
 	int incrementedDate = readFromTodayDateFile() + 1;
@@ -1716,13 +1801,123 @@ void incrementDate() {
 
 }
 
+int getCountNewLine(char* contentFile) {
+	int indexContentFile = 0;
+	int counterNewLine = 0;
+
+	while (contentFile[indexContentFile] != '\0') {
+		if (contentFile[indexContentFile] == '\n') {
+
+			counterNewLine++;
+		}
+	}
+	
+	return counterNewLine;
+}
+
+//Показва оборота за деня
+void showTurnoverForToday() {
+	ifstream in(TURNOVER_PER_DAY_FILE);
+
+	if (!in.is_open()) {
+		cout << "Error";
+	}
+	int todayDay = readFromTodayDateFile();
+	char line[MAX_SIZE_CHAR_ARRAY];
+	int dayFromTodayDate = getDayOfDayFile(todayDay);
+	int monthFromTodayDate = getMonthOfDayFile();
+	int dayFromDate;
+	int monthFromDate;
+	int index = 0;
+	float turnoverForToday = 0;
+	int number = 0;
+
+	while (in.getline(line, BUFFER_SIZE)) {
+		dayFromDate = 0;
+		monthFromDate = 0;
+		index = 0;
+		while (line[index] >= '0' && line[index] <= '9')
+		{
+			dayFromDate = dayFromDate * 10 + (line[index] - '0');
+			index++;
+		}
+		// За да прескочи ; символа
+		index++;
+		while (line[index] >= '0' && line[index] <= '9')
+		{
+			monthFromDate = monthFromDate * 10 + (line[index] - '0');
+			index++;
+		}
+		if (dayFromDate == dayFromTodayDate && monthFromTodayDate == monthFromDate) {
+			while (line[index] != ';') {
+				index++;
+			}
+			index++;
+			while (line[index] >= '0' && line[index] <= '9') {
+				number = number * 10 + (line[index] - '0');
+				index++;
+			}
+
+			turnoverForToday += number;
+
+		}
+	}
+	cout << "Turnover For Today: " << turnoverForToday / 100 << endl;
+
+	in.close();
+}
+
+void showReportForToday() {
+	showTurnoverForToday();
+	incrementDate();
+}
+
+// Заглавие 
 void entryTitles() {
 	cout << endl;
-
-	cout << "    WELCOME TO" << endl;
-	cout << "    RESTAURANT SOFTWARE " << endl;
+	
+	cout << "W       W  EEEEE  L       CCCCC  OOOOO  M     M  EEEEE" << endl;
+	cout << "W       W  E      L      C       O   O  MM   MM  E    " << endl;
+	cout << "W   W   W  EEEE   L      C       O   O  M M M M  EEEE " << endl;
+	cout << " W W W W   E      L      C       O   O  M  M  M  E    " << endl;
+	cout << "  W   W    EEEEE  LLLLL   CCCCC  OOOOO  M     M  EEEEE" << endl;
 	cout << endl;
 
+	cout << " 		TTTTT  OOOOO        MM   MM  YY    YY" << endl;
+	cout << "		  T    O   O        M M M M   YY  YY  " << endl;
+	cout << "	      T    O   O        M  M  M     YY    " << endl;
+	cout << "	      T    O   O        M     M     YY    " << endl;
+	cout << "	      T    OOOOO        M     M     YY    " << endl;
+	cout << endl;
+
+	/*cout << "MM   MM  YY    YY " << endl;
+	cout << "M M M M   YY  YY  " << endl;
+	cout << "M  M  M     YY    " << endl;
+	cout << "M     M     YY    " << endl;
+	cout << endl;*/
+
+	cout << "RRRR	EEEEE  SSSS	TTTTT	  A		 U	 U RRRR		  A		 N	 N	TTTTT" << endl;
+	cout << "R   R	E      S      T		 A A	 U	 U R   R	 A A	 NN	 N	  T  " << endl;
+	cout << "RRRR	EEEE   SSSS	  T	    A   A	 U	 U RRRR		A   A	 N N N	  T	 " << endl;
+	cout << "RR     E         S   T	   AAAAAAA	 U	 U RR	   AAAAAAA	 N	NN	  T	 " << endl;
+	cout << "R RR	EEEEE  SSSS	  T	  A		  A	  UUU  R RR	  A		  A	 N	 N	  T  " << endl;
+	cout << endl;
+	/*cout << "    WELCOME TO" << endl;
+	cout << "    RESTAURANT SOFTWARE " << endl;
+	cout << endl;*/
+
+}
+
+void showOptionsForWaiter() {
+	cout << endl;
+	cout << WAITER_MENU_OPTIONS << endl;
+	cout << endl;
+}
+
+void showOptionsForManager() {
+	cout << endl;
+	cout << MANAGER_MENU_OPTIONS << endl;
+	cout << endl;
 }
 
 int main()
@@ -1746,14 +1941,10 @@ int main()
 		cin.ignore();
 	}
 
-
 	if (typeOfWorker == 'w') {
-		cout << endl;
-		cout << WAITER_MENU_OPTIONS << endl;
-		cout << endl;
+		showOptionsForWaiter();
 
 		do {
-
 			cout << "What you want to choose from above:";
 			cin >> action;
 
@@ -1774,17 +1965,16 @@ int main()
 			}
 			else if (action == 6) {
 				showTurnoverForToday();
+			}else  if (action == 7) {
+				showOptionsForWaiter();
 			}
-		} while (action >= 1 || action <= 6);
+		} while (action >= 1 || action <= 7);
 
 	}
 	else if (typeOfWorker == 'm') {
-		cout << endl;
-		cout << MANAGER_MENU_OPTIONS << endl;
-		cout << endl;
+		showOptionsForManager();
 
 		do {
-
 			cout << "What you want to choose from above:";
 			cin >> action;
 			cin.ignore();
@@ -1798,10 +1988,10 @@ int main()
 				orderCancellation();
 			}
 			else if (action == 4) {
-				showDetailedOrder();
+				getNamesOfArticleAndSortOrders();
 			}
 			else if (action == 5) {
-
+				showDetailedOrder();
 			}
 			else if (action == 6) {
 				seeWhatLeftsInWarehouse();
@@ -1813,27 +2003,20 @@ int main()
 				addNewProductToWarehouse();
 			}
 			else if (action == 9) {
-
+				showTurnoverForToday();
 			}
 			else if (action == 10) {
-
+				showReportForToday();
 			}
 			else if (action == 11) {
-
-
-			}
-			else if (action == 12) {
 				addNewArticleToMenu();
 			}
-			else if (action == 13) {
+			else if (action == 12) {
 				removeArticleFromMenu();
 			}
-		} while (action >= 1 || action <= 6);
-
-
-		cout << endl;
-
-
-
+			else  if (action == 13) {
+				showOptionsForManager();
+			}
+		} while (action >= 1 || action <= 13);
 	}
 }

@@ -1,7 +1,8 @@
-1;Cucumber;0700
-2;Tomato;0850
+1;Cucumber;0800
+2;Tomato;1100
 3;Cheese;2320
-4;Potato;3200
-5;Yoghurt;4500
-6;Pork mince;7000
-7;Eggs;3500
+4;Potato;1220
+5;Yoghurt;2850
+6;Pork mince;3500
+7;Eggs;3100
+8;Potatoes;1100
