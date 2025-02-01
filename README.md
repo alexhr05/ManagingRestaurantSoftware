@@ -1,6 +1,8 @@
 # ManagingRestaurantSoftware
 Efficient and simple software for restaurant. Here you can manage your warehouse, menu, orders and turnover, depending on the role. Roles are waiter and manager 
 
+### Access role: 
+w-waiter; m-manager
 ## WAITER
 1. Overview of the menu
 2. Make Order
