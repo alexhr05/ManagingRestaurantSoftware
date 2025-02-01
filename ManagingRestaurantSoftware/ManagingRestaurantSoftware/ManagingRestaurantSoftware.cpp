@@ -1362,7 +1362,7 @@ void makeOrder() {
 	int sumPriceArticle = 0;
 	int indexForOrder = 0;
 	int checkAvailabeProducts = 1;
-	int updateLeftProducts = 2;;
+	int updateLeftProducts = 2;
 	do {
 		cout << endl;
 
@@ -1370,7 +1370,7 @@ void makeOrder() {
 
 		cin >> articleId;
 		if (articleId == 0) {
-			break;
+			return;
 		}
 
 		isExistArticleInMenu = isExistArticle(articleId);
@@ -1421,6 +1421,7 @@ void makeOrder() {
 		readRecipesFileAndUpdateProductQuantity(orders, countArticleInOrders);
 		updateTurnoverInFile(todayDate, sumPriceArticle);
 		writeInOrderFileAppend(completеОrder);
+		cout << "Successfully made order!" << endl;
 	}
 	else {
 		cout << "Cannot place order due to unavailability of products" << endl;
